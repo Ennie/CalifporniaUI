@@ -1,0 +1,72 @@
+Thanks to:
+Tukz for his great UI, which was used as base for my own interface - www.tukui.org
+Qulight for qulightUI, something taken from there :)  - http://www.wowinterface.com/downloads/info16324-QulightUI.html
+haste for oUF and help with creating of oUF_DruidMana - http://www.wowinterface.com/downloads/info9994-oUF.html
+Drakull for oUF_Drk layout - some code and inspiration - http://www.wowinterface.com/downloads/info18144-oUF_Drk.html
+
+PLEASE DON'T POKE THAT PEOPLES FOR MY OR YOUR OWN ERRORS.
+
+НЕ МУЧАЙТЕ ПЕРЕЧИСЛЕННЫХ ЛЮДЕЙ ЗА МОИ ИЛИ СВОИ ОШИБКИ.
+
+
+
+
+
+***
+
+If you're addon or code autor, and you see your code in my UI, but cant find your name in thanks list, or unhappy with your code using, please mail me: califpornia@ya.ru
+
+***
+
+Если Вы автор аддона, либо части кода, и не наблюдаете себя в списке благодарностей, либо недовольны использованием Вашего кода, пожалуйста свяжитесь со мной по e-mail califpornia@ya.ru
+
+
+
+
+
+
+local config = { 
+    "font" = "Fonts\FRIZQT__.TTF", 
+    "fontsize" = 12, 
+    "title" = " haste", 
+    "a1" = "RIGHT", 
+    "a2" = "RIGHT", 
+    "x" = 0, 
+    "y" = 0, 
+} 
+
+    local xStat = CreateFrame("Frame", "StatDisplayPanel", UIParent) 
+	xStat:SetHeight(30)
+	xStat:SetWidth(100)
+--    xStat:SetFrameStrata("BACKGROUND") 
+    xStat:SetFrameLevel(2) 
+    xStat:SetPoint(config.a1, UIParent, config.a2, config.x, config.y) 
+
+    local Text  = xStat:CreateFontString(nil, "OVERLAY") 
+    Text:SetFont(config.font, config.fontsize) 
+	Text:SetPoint("LEFT", xStat,"LEFT", 10, 0.5)
+
+    local int = 1 
+
+    local function xUpdate(self, t) 
+        spellhaste = GetCombatRating(20) 
+        rangedhaste = GetCombatRating(19) 
+        attackhaste = GetCombatRating(18) 
+         
+        if attackhaste > spellhaste and select(2, UnitClass("Player")) ~= "HUNTER" then 
+            haste = attackhaste 
+        elseif select(2, UnitClass("Player")) == "HUNTER" then 
+            haste = rangedhaste 
+        else 
+            haste = spellhaste 
+        end 
+         
+        int = int - t 
+        if int < 0 then 
+            Text:SetText(haste.." "..config.title) 
+            int = 1 
+        end      
+    end 
+
+    xStat:SetScript("OnUpdate", xUpdate) 
+    xUpdate(xStat, 10) 

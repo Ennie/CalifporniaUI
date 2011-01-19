@@ -1,0 +1,13 @@
+﻿## Interface: 40000
+## Author: Ennie aka Califpornia
+## Credits to: Caith, Caellian, Shestak, Haste, Tekkub, Alza, Roth, P3lim, Tulla, Hungtar, hankthetank, Ishtara and others...
+## Special Thanks to: Tukz (www.tukui.org) and qulight (qulightUI)
+## Version: 0.1
+## Title: CalifporniaUI
+## Notes: Highly customized UI
+## SavedVariables: CalifporniaData
+## SavedVariablesPerCharacter: CalifporniaUIInstall
+## OptionalDeps: CalifporniaUI_Config, !ClassColors, Clique
+## X-oUF: oUF
+
+CalifporniaUI.xml

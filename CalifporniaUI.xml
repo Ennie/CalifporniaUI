@@ -1,0 +1,67 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/">	
+	<Script file="modules\variables.lua"/>
+	<Script file="config\config.lua"/>
+	<Script file="modules\config_override.lua"/>
+
+	<Script file="modules\slashcmd.lua"/>
+	<Script file="modules\init.lua"/>
+
+
+	<Script file="config\media.lua"/>
+	<Script file="config\raid_debuffs.lua"/>
+
+
+	<Include file="libs\oUF\oUF.xml"/>
+	<Include file="modules\uf_party.xml"/>
+	<Script file="libs\oUF_boring_totembar\main.lua"/>
+	<Script file="libs\oUF_DebuffHighlight\oUF_DebuffHighlight.lua"/>
+	<Script file="libs\oUF_RaidDebuffs\raidDebuffs.lua"/>
+	<Script file="libs\oUF_DruidMana\oUF_DruidMana.lua"/>
+	<Script file="libs\oUF_MovableFrames\movable.lua"/>
+	<Script file="libs\oUF_Experience\oUF_Experience.lua"/>
+	<Script file="libs\oUF_Reputation\oUF_Reputation.lua"/>
+	<Script file="libs\oUF_ThreatBar\oUF_ThreatBar.lua"/>
+
+
+	<Script file="modules\util.lua"/>
+	<Script file="modules\panels.lua"/>
+
+	<Script file="modules\chat.lua"/>
+	<Script file="modules\skinframe.lua"/>
+	<Script file="modules\tooltip.lua"/>
+	<Script file="modules\misc.lua"/>
+	<Script file="modules\minimap.lua"/>
+	<Script file="modules\mirror.lua"/>
+	<Script file="modules\map.lua"/>
+	<Script file="modules\nameplates.lua"/>
+	<Script file="modules\bags.lua"/>
+	<Script file="modules\omnicc.lua"/>
+	<Script file="modules\addonmgr.lua"/>
+
+	<Script file="modules\buttonfacade.lua"/>
+
+	<Script file="modules\buffs.lua"/>
+
+	<Script file="actionbars\hideblizz.lua"/>
+	<Script file="actionbars\bar1.lua"/>
+	<Script file="actionbars\bar2.lua"/>
+	<Script file="actionbars\bar3.lua"/>
+	<Script file="actionbars\bar4.lua"/>
+	<Script file="actionbars\bar5.lua"/>
+	<Script file="actionbars\stancebar.lua"/>
+	<Script file="actionbars\petbar.lua"/>
+	<Script file="actionbars\totembar.lua"/>
+	<Script file="actionbars\vehicleexit.lua"/>
+
+	<Script file="modules\castbar.lua"/>
+	<Script file="modules\uf_tags.lua"/>
+	<Script file="modules\uf_layout.lua"/>
+
+	<Script file="datatext\durability.lua"/>
+	<Script file="datatext\system.lua"/>
+	<Script file="datatext\friend.lua"/>
+	<Script file="datatext\gold.lua"/>
+	<Script file="datatext\guild.lua"/>
+	<Script file="datatext\bags.lua"/>
+
+</Ui>

@@ -1,0 +1,8 @@
+## Interface: 40000
+## Title: oUF: (boring) TotemBar
+## Version: 1.2
+## Author: tecu
+## Notes: TotemBar element for oUF
+## Dependencies: oUF
+
+main.lua
