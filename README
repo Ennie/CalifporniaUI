@@ -1,15 +1,12 @@
-Thanks to:
+ï»¿Thanks to:
 Tukz for his great UI, which was used as base for my own interface - www.tukui.org
-Qulight for qulightUI, something taken from there :)  - http://www.wowinterface.com/downloads/info16324-QulightUI.html
+Qulight for qulightUI, something taken from it :)  - http://www.wowinterface.com/downloads/info16324-QulightUI.html
 haste for oUF and help with creating of oUF_DruidMana - http://www.wowinterface.com/downloads/info9994-oUF.html
 Drakull for oUF_Drk layout - some code and inspiration - http://www.wowinterface.com/downloads/info18144-oUF_Drk.html
 
 PLEASE DON'T POKE THAT PEOPLES FOR MY OR YOUR OWN ERRORS.
 
-ÍÅ ÌÓ×ÀÉÒÅ ÏÅÐÅ×ÈÑËÅÍÍÛÕ ËÞÄÅÉ ÇÀ ÌÎÈ ÈËÈ ÑÂÎÈ ÎØÈÁÊÈ.
-
-
-
+ÐÐ• ÐœÐ£Ð§ÐÐ™Ð¢Ð• ÐŸÐ•Ð Ð•Ð§Ð˜Ð¡Ð›Ð•ÐÐÐ«Ð¥ Ð›Ð®Ð”Ð•Ð™ Ð—Ð ÐœÐžÐ˜ Ð˜Ð›Ð˜ Ð¡Ð’ÐžÐ˜ ÐžÐ¨Ð˜Ð‘ÐšÐ˜.
 
 
 ***
@@ -18,55 +15,4 @@ If you're addon or code autor, and you see your code in my UI, but cant find you
 
 ***
 
-Åñëè Âû àâòîð àääîíà, ëèáî ÷àñòè êîäà, è íå íàáëþäàåòå ñåáÿ â ñïèñêå áëàãîäàðíîñòåé, ëèáî íåäîâîëüíû èñïîëüçîâàíèåì Âàøåãî êîäà, ïîæàëóéñòà ñâÿæèòåñü ñî ìíîé ïî e-mail califpornia@ya.ru
-
-
-
-
-
-
-local config = { 
-    "font" = "Fonts\FRIZQT__.TTF", 
-    "fontsize" = 12, 
-    "title" = " haste", 
-    "a1" = "RIGHT", 
-    "a2" = "RIGHT", 
-    "x" = 0, 
-    "y" = 0, 
-} 
-
-    local xStat = CreateFrame("Frame", "StatDisplayPanel", UIParent) 
-	xStat:SetHeight(30)
-	xStat:SetWidth(100)
---    xStat:SetFrameStrata("BACKGROUND") 
-    xStat:SetFrameLevel(2) 
-    xStat:SetPoint(config.a1, UIParent, config.a2, config.x, config.y) 
-
-    local Text  = xStat:CreateFontString(nil, "OVERLAY") 
-    Text:SetFont(config.font, config.fontsize) 
-	Text:SetPoint("LEFT", xStat,"LEFT", 10, 0.5)
-
-    local int = 1 
-
-    local function xUpdate(self, t) 
-        spellhaste = GetCombatRating(20) 
-        rangedhaste = GetCombatRating(19) 
-        attackhaste = GetCombatRating(18) 
-         
-        if attackhaste > spellhaste and select(2, UnitClass("Player")) ~= "HUNTER" then 
-            haste = attackhaste 
-        elseif select(2, UnitClass("Player")) == "HUNTER" then 
-            haste = rangedhaste 
-        else 
-            haste = spellhaste 
-        end 
-         
-        int = int - t 
-        if int < 0 then 
-            Text:SetText(haste.." "..config.title) 
-            int = 1 
-        end      
-    end 
-
-    xStat:SetScript("OnUpdate", xUpdate) 
-    xUpdate(xStat, 10) 
+Ð•ÑÐ»Ð¸ Ð’Ñ‹ Ð°Ð²Ñ‚Ð¾Ñ€ Ð°Ð´Ð´Ð¾Ð½Ð°, Ð»Ð¸Ð±Ð¾ Ñ‡Ð°ÑÑ‚Ð¸ ÐºÐ¾Ð´Ð°, Ð¸ Ð½Ðµ Ð½Ð°Ð±Ð»ÑŽÐ´Ð°ÐµÑ‚Ðµ ÑÐµÐ±Ñ Ð² ÑÐ¿Ð¸ÑÐºÐµ Ð±Ð»Ð°Ð³Ð¾Ð´Ð°Ñ€Ð½Ð¾ÑÑ‚ÐµÐ¹, Ð»Ð¸Ð±Ð¾ Ð½ÐµÐ´Ð¾Ð²Ð¾Ð»ÑŒÐ½Ñ‹ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ð½Ð¸ÐµÐ¼ Ð’Ð°ÑˆÐµÐ³Ð¾ ÐºÐ¾Ð´Ð°, Ð¿Ð¾Ð¶Ð°Ð»ÑƒÐ¹ÑÑ‚Ð° ÑÐ²ÑÐ¶Ð¸Ñ‚ÐµÑÑŒ ÑÐ¾ Ð¼Ð½Ð¾Ð¹ Ð¿Ð¾ e-mail califpornia@ya.ru
