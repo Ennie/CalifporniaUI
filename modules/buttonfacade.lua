@@ -1,146 +1,111 @@
 --[[
-	Project.: LibButtonFacade
-	File....: LibButtonFacade.lua
-	Version.: 340
-	Author..: StormFX, JJ Sheets
+	Very lightweight and feature-cutten version of LibButtonFacade. For full feature set use original AddOn. Based on LBF r344
 ]]
 
--- [ Set Up ] --
 
-local LBF = {}
+-- SKIN DATA START: ButtonFacade_DsmFade
+local SkinData = {
+	Backdrop = {
+		Width = 40,
+		Height = 40,
+		Color = {1, 1, 1, 0.75},
+		Texture = CalifporniaCFG["media"].buttonbackdrop,
+	},
+	Icon = {
+		Width = 26,
+		Height = 26,
+		TexCoords = {0.07,0.93,0.07,0.93},
+	},
+	Flash = {
+		Width = 40,
+		Height = 40,
+		Color = {1, 0, 0, 0.5},
+		Texture = CalifporniaCFG["media"].buttonoverlay,
+	},
+	Cooldown = {
+		Width = 26,
+		Height = 26,
+	},
+	AutoCast = {
+		Width = 24,
+		Height = 24,
+		OffsetX = 1,
+		OffsetY = -1,
+		AboveNormal = true,
+	},
+	Normal = {
+		Width = 40,
+		Height = 40,
+		Static = true,
+		Color = {0.25, 0.25, 0.25, 1},
+		Texture =CalifporniaCFG["media"].buttonnormal,
+	},
+	Pushed = {
+		Width = 40,
+		Height = 40,
+		Color = {0, 0, 0, 0.5},
+		Texture = CalifporniaCFG["media"].buttonoverlay,
+	},
+	Border = {
+		Width = 40,
+		Height = 40,
+		BlendMode = "ADD",
+		Texture = CalifporniaCFG["media"].buttonborder,
+	},
+	Disabled = {
+		Hide = true,
+	},
+	Checked = {
+		Width = 40,
+		Height = 40,
+		BlendMode = "ADD",
+		Color = {0, 0.75, 1, 0.5},
+		Texture = CalifporniaCFG["media"].buttonborder,
+	},
+	AutoCastable = {
+		Width = 64,
+		Height = 64,
+		OffsetX = 0.5,
+		OffsetY = -0.5,
+		Texture = [[Interface\Buttons\UI-AutoCastableOverlay]],
+	},
+	Highlight = {
+		Width = 40,
+		Height = 40,
+		BlendMode = "ADD",
+		Color = {1, 1, 1, 0.5},
+		Texture = CalifporniaCFG["media"].buttonhighlight,
+	},
+	Gloss = {
+		Width = 40,
+		Height = 40,
+		Texture = CalifporniaCFG["media"].buttongloss,
+	},
+	HotKey = {
+		Width = 40,
+		Height = 10,
+		OffsetX = -2,
+		OffsetY = 10,
+	},
+	Count = {
+		Width = 40,
+		Height = 10,
+		OffsetX = -2,
+		OffsetY = -10,
+	},
+	Name = {
+		Width = 40,
+		Height = 10,
+		OffsetY = -10,
+	},
+}
+-- SKIN DATA END
 
--- [ Locals ] --
+
+
 
 local error, pairs, print, setmetatable, type, unpack = error, pairs, print, setmetatable, type, unpack
-
--- [ Error Handling ] -- 
-
-local E_PRE = "|cffffff99<LBF Debug>|r "
-local E_ARG = "Bad argument to method '%s'. '%s' must be a %s."
-local E_TPL = "Invalid template reference by skin '%s'. Skin '%s' does not exist."
-
-local debug = false
-
--- Throws an error if debug mode is enabled.
-local function Debug(e,...)
-	if debug == true then
-		local msg = (E_PRE..e):format(...)
-		error(msg,3)
-	end
-end
-
-function LBF:Debug()
-	if not debug then
-		debug = true
-		print(E_PRE.."|cff00ff00enabled|r.")
-	else
-		debug = false
-		print(E_PRE.."|cffff0000disabled|r.")
-	end
-end
-
--- [ Call Backs ] --
-
-local FireGuiCB
-
-do
-	local callbacks = {}
-	-- Fires all registered GUI call-backs.
-	function FireGuiCB(Addon,Group,Button)
-		for i = 1, #callbacks do
-			local v = callbacks[i]
-			v.cb(v.arg,Addon,Group,Button)
-		end
-	end
-	-- Registers a GUI call-back.
-	function LBF:RegisterGuiCallback(callback,arg)
-		callbacks[#callbacks+1] = {cb = callback, arg = arg}
-	end
-end
-
-local FireSkinCB
-
-do
-	local callbacks = {}
-	-- Fires all call-backs registered for the specified add-on.
-	function FireSkinCB(Addon,SkinID,Gloss,Backdrop,Group,Button,Colors)
-		Addon = Addon or "ButtonFacade"
-		local args = callbacks[Addon]
-		if args then
-			for arg, callback in pairs(args) do
-				callback(arg and arg,SkinID,Gloss,Backdrop,Group,Button,Colors)
-			end
-		end
-	end
-	-- Registers a skin call-back for the specified add-on.
-	function LBF:RegisterSkinCallback(Addon,callback,arg)
-		local arg = callback and arg or false
-		callbacks[Addon] = callbacks[Addon] or {}
-		callbacks[Addon][arg] = callback
-	end
-end
-
--- [ Skins ] --
-
-local Skins = {}
-local SkinList = {}
-
-do
-	local hidden = {Hide = true}
-	-- Adds a skin to the skin tables.
-	function LBF:AddSkin(SkinID,SkinData,Replace)
-		if type(SkinID) ~= "string" then
-			Debug(E_ARG,"AddSkin","SkinID","string")
-			return
-		end
-		if Skins[SkinID] and not Replace then
-			return
-		end
-		if type(SkinData) ~= "table" then
-			Debug(E_ARG,"AddSkin","SkinData","table")
-			return
-		end
-		if SkinData.Template then
-			if Skins[SkinData.Template] then
-				setmetatable(SkinData,{__index=Skins[SkinData.Template]})
-			else
-				Debug(E_TPL,SkinID,SkinData.Template)
-				return
-			end
-		end
-		for layer in pairs(Skins.Blizzard) do
-			if type(SkinData[layer]) ~= "table" then
-				SkinData[layer] = hidden
-			end
-		end
-		Skins[SkinID] = SkinData
-		SkinList[SkinID] = SkinID
-	end
-	-- Returns the specified skin.
-	function LBF:GetSkin(SkinID)
-		return Skins[SkinID]
-	end
-	-- Returns the skin data table.
-	function LBF:GetSkins()
-		return Skins
-	end
-	-- Returns the skin list.
-	function LBF:ListSkins()
-		return SkinList
-	end
-end
-
--- [ Colors ] --
-
--- Returns the layer's color table.
-local function GetLayerColor(SkinLayer,Colors,Layer,Alpha)
-	local color = Colors[Layer] or SkinLayer.Color
-	if type(color) == "table" then
-		return color[1] or 1, color[2] or 1, color[3] or 1, Alpha or color[4] or 1
-	else
-		return 1, 1, 1, Alpha or 1
-	end
-end
+local LBF = {}
 
 -- [ Default Settings ] --
 
@@ -156,9 +121,6 @@ local Layers = {
 	Border = "Texture",
 	AutoCastable = "Texture",
 	Highlight = "Special",
-	Name = "Text",
-	Count = "Text",
-	HotKey = "Text",
 }
 -- Draw Layers
 local Levels = {
@@ -180,7 +142,15 @@ local Parent = {
 	Icon = true,
 }
 
--- [ Custom Layers ] --
+-- Returns the layer's color table.
+local function GetLayerColor(SkinLayer,Colors,Layer,Alpha)
+	local color = Colors[Layer] or SkinLayer.Color
+	if type(color) == "table" then
+		return color[1] or 1, color[2] or 1, color[3] or 1, Alpha or color[4] or 1
+	else
+		return 1, 1, 1, Alpha or 1
+	end
+end
 
 -- [ Normal ] --
 
@@ -429,27 +399,96 @@ end
 
 -- [ Text Layers ] --
 
--- Skins a text layer.
-local function SkinTextLayer(Skin,Button,Region,Layer,xScale,yScale,Colors)
+-- Skins a text layer. Temporary function for backward compatibility.
+local function SkinTextLayer(Skin,Button,ButtonData,Layer,xScale,yScale,Colors)
+	if ButtonData[Layer] == nil then
+		local name = Button:GetName()
+		ButtonData[Layer] = (name and _G[name..Layer]) or false
+	end
+	local region = ButtonData[Layer]
 	local skin = Skin[Layer]
-	if skin.Hide then
-		Region:Hide()
-		return
-	end
-	Region:SetDrawLayer("OVERLAY")
-	Region:SetWidth((skin.Width or 36) * (skin.Scale or 1) * xScale)
-	Region:SetHeight((skin.Height or 10) * (skin.Scale or 1) * yScale)
-	Region:ClearAllPoints()
+	if not region or skin.Hide then return end
+	region:SetDrawLayer("OVERLAY")
+	region:SetWidth((skin.Width or 36) * (skin.Scale or 1) * xScale)
+	region:SetHeight((skin.Height or 10) * (skin.Scale or 1) * yScale)
+	region:ClearAllPoints()
 	if Layer == "HotKey" then
-		if not Region.__LBF_SetPoint then
-			Region.__LBF_SetPoint = Region.SetPoint
-			Region.SetPoint = function() end
+		if not region.__LBF_SetPoint then
+			region.__LBF_SetPoint = region.SetPoint
+			region.SetPoint = function() end
 		end
-		Region:__LBF_SetPoint("CENTER",Button,"CENTER",skin.OffsetX or 0,skin.OffsetY or 0)
+		region:__LBF_SetPoint("CENTER",Button,"CENTER",skin.OffsetX or 0,skin.OffsetY or 0)
 	else
-		Region:SetPoint("CENTER",Button,"CENTER",skin.OffsetX or 0,skin.OffsetY or 0)
-		Region:SetVertexColor(GetLayerColor(skin,Colors,Layer))
+		region:SetPoint("CENTER",Button,"CENTER",skin.OffsetX or 0,skin.OffsetY or 0)
+		region:SetVertexColor(GetLayerColor(skin,Colors,Layer))
 	end
+end
+
+
+-- Skins the Name text.
+local function SkinNameText(Skin,Button,ButtonData,xScale,yScale,Colors)
+	if ButtonData.Name == nil then
+		local name = Button:GetName()
+		ButtonData.Name = (name and _G[name.."Name"]) or false
+	end
+	local region = ButtonData.Name
+	local skin = Skin.Name
+	if not region or skin.Hide then return end
+	local font, _, flags = region:GetFont()
+	region:SetFont(skin.Font or font,skin.FontSize or 11,flags)
+	region:SetJustifyH(skin.JustifyH or "CENTER")
+	region:SetJustifyV(skin.JustifyV or "MIDDLE")
+	region:SetDrawLayer("OVERLAY")
+	region:SetWidth((skin.Width or 36) * (skin.Scale or 1) * xScale)
+	region:SetHeight((skin.Height or 10) * (skin.Scale or 1) * yScale)
+	region:ClearAllPoints()
+	region:SetPoint("BOTTOM",Button,"BOTTOM",skin.OffsetX or 0,skin.OffsetY or 0)
+	region:SetVertexColor(GetLayerColor(skin,Colors,"Name"))
+end
+
+-- Skins the Count text.
+local function SkinCountText(Skin,Button,ButtonData,xScale,yScale,Colors)
+	if ButtonData.Count == nil then
+		local name = Button:GetName()
+		ButtonData.Count = (name and _G[name.."Count"]) or false
+	end
+	local region = ButtonData.Count
+	local skin = Skin.Count
+	if not region or skin.Hide then return end
+	local font, _, flags = region:GetFont()
+	region:SetFont(skin.Font or font,skin.FontSize or 15,flags)
+	region:SetJustifyH(skin.JustifyH or "RIGHT")
+	region:SetJustifyV(skin.JustifyV or "MIDDLE")
+	region:SetDrawLayer("OVERLAY")
+	region:SetWidth((skin.Width or 36) * (skin.Scale or 1) * xScale)
+	region:SetHeight((skin.Height or 10) * (skin.Scale or 1) * yScale)
+	region:ClearAllPoints()
+	region:SetPoint("BOTTOMRIGHT",Button,"BOTTOMRIGHT",skin.OffsetX or 0,skin.OffsetY or 0)
+	region:SetVertexColor(GetLayerColor(skin,Colors,"Count"))
+end
+
+-- Skins the HotKey text.
+local function SkinHotKeyText(Skin,Button,ButtonData,xScale,yScale)
+	if ButtonData.HotKey == nil then
+		local name = Button:GetName()
+		ButtonData.HotKey = (name and _G[name.."HotKey"]) or false
+	end
+	local region = ButtonData.HotKey
+	local skin = Skin.HotKey
+	if not region or skin.Hide then return end
+	local font, _, flags = region:GetFont()
+	region:SetFont(skin.Font or font,skin.FontSize or 13,flags)
+	region:SetJustifyH(skin.JustifyH or "RIGHT")
+	region:SetJustifyV(skin.JustifyV or "MIDDLE")
+	region:SetDrawLayer("OVERLAY")
+	region:SetWidth((skin.Width or 36) * (skin.Scale or 1) * xScale)
+	region:SetHeight((skin.Height or 10) * (skin.Scale or 1) * yScale)
+	region:ClearAllPoints()
+	if not region.__LBF_SetPoint then
+		region.__LBF_SetPoint = region.SetPoint
+		region.SetPoint = function() end
+	end
+	region:__LBF_SetPoint("TOPLEFT",Button,"TOPLEFT",skin.OffsetX or 0,skin.OffsetY or 0)
 end
 
 -- [ Frame Layers ] --
@@ -509,7 +548,9 @@ do
 		end
 	end
 	-- Applies a skin to a button and its associated layers.
-	function ApplySkin(SkinID,Gloss,Backdrop,Colors,Button,ButtonData)
+	function ApplySkin(Button, Gloss,Backdrop)
+		local Colors = {}
+		local ButtonData = {}
 		if not Button then return end
 		Button.__LBF_Level = Button.__LBF_Level or {}
 		if not Button.__LBF_Level[1] then
@@ -523,7 +564,7 @@ do
 		end
 		local xScale = (Button:GetWidth() or 36) / 36
 		local yScale = (Button:GetHeight() or 36) / 36
-		local skin = Skins[SkinID or "Blizzard"] or Skins["Blizzard"]
+		local skin = SkinData
 		local name = Button:GetName()
 		if Backdrop and not skin.Backdrop.Hide then
 			SkinBackdropLayer(skin,Button,xScale,yScale,Colors)
@@ -543,8 +584,6 @@ do
 			if region then
 				if type == "Special" then
 					SkinSpecialLayer(skin,Button,region,layer,xScale,yScale,Colors)
-				elseif type == "Text" then
-					SkinTextLayer(skin,Button,region,layer,xScale,yScale,Colors)
 				else
 					SkinTextureLayer(skin,Button,region,layer,xScale,yScale,Colors)
 				end
@@ -562,6 +601,16 @@ do
 		if ButtonData.Cooldown then
 			Button.__LBF_Level[2] = ButtonData.Cooldown -- Frame Level 2
 			SkinCooldownFrame(skin,Button,ButtonData.Cooldown,xScale,yScale)
+		end
+		local version = skin.LBF_Version
+		if type(version) == "number" and version >= 40000 then
+			SkinNameText(skin,Button,ButtonData,xScale,yScale,Colors)
+			SkinCountText(skin,Button,ButtonData,xScale,yScale,Colors)
+			SkinHotKeyText(skin,Button,ButtonData,xScale,yScale)
+		else
+			SkinTextLayer(skin,Button,ButtonData,"Name",xScale,yScale,Colors)
+			SkinTextLayer(skin,Button,ButtonData,"Count",xScale,yScale,Colors)
+			SkinTextLayer(skin,Button,ButtonData,"HotKey",xScale,yScale,Colors)
 		end
 		if ButtonData.AutoCast == nil then
 			ButtonData.AutoCast = (name and _G[name.."Shine"]) or false
@@ -583,316 +632,4 @@ do
 	end
 end
 
--- [ Groups ] --
-
--- Returns a group ID. IE: Addon, Addon_Group or Addon_Group_Button.
-local function RegID(Addon,Group,Button)
-	local id = "ButtonFacade"
-	if Addon then
-		id = Addon
-		if Group then
-			id = id.."_"..Group
-			if Button then
-				id = id.."_"..Button
-			end
-		end
-	end
-	return id
-end
-
-local Groups = {}
-local GroupMT
-
--- Creates and returns a group.
-local function NewGroup(Addon,Group,Button)
-	if not Group then Button = nil end
-	local o = {
-		Addon = Addon,
-		Group = Group,
-		Button = Button,
-		RegID = RegID(Addon,Group,Button),
-		SkinID = "Blizzard",
-		Gloss = false,
-		Backdrop = false,
-		Colors = {},
-		Buttons = {},
-		SubList = not Button and {} or nil,
-	}
-	setmetatable(o,GroupMT)
-	Groups[o.RegID] = o
-	if Addon then
-		local a = Groups["ButtonFacade"] or NewGroup()
-		o.Parent = a
-		a:AddSubGroup(Addon)
-	end
-	if Group then
-		local a = Groups[Addon] or NewGroup(Addon)
-		o.Parent = a
-		a:AddSubGroup(Group)
-		if Button then
-			local ag = Groups[Addon.."_"..Group] or NewGroup(Addon,Group)
-			o.Parent = ag
-			ag:AddSubGroup(Button)
-		end
-	end
-	return o
-end
-
--- Returns a group.
-function LBF:Group(Addon,Group,Button)
-	local group = Groups[RegID(Addon,Group,Button)] or NewGroup(Addon,Group,Button)
-	return group
-end
-
--- Returns a list of add-ons.
-function LBF:ListAddons()
-	local group = self:Group()
-	return group.SubList
-end
-
--- Returns a list of groups registered to an add-on.
-function LBF:ListGroups(Addon)
-	return Groups[Addon].SubList
-end
-
--- Returns a list of buttons registered to a group.
-function LBF:ListButtons(Addon,Group)
-	return Groups[Addon.."_"..Group].SubList
-end
-do
-	local reverse = {}
-	-- Group Metatable
-	GroupMT = {
-		__index = {
-			-- [ Button ] --
-			-- Adds a button to the group.
-			AddButton = function(self,Button,ButtonData)
-				if type(Button) ~= "table" then
-					Debug(E_ARG,"AddButton","Button","table")
-					return
-				end
-				if reverse[Button] == self then return end
-				if reverse[Button] then
-					reverse[Button]:RemoveButton(Button,true)
-				end
-				reverse[Button] = self
-				ButtonData = ButtonData or {}
-				self.Buttons[Button] = ButtonData
-				ApplySkin(self.SkinID,self.Gloss,self.Backdrop,self.Colors,Button,ButtonData)
-			end,
-			-- Removes a button from the group and optionally reskins it.
-			RemoveButton = function(self,Button,noReskin)
-				if not Button then return end
-				local btndata = self.Buttons[Button]
-				reverse[Button] = nil
-				if btndata and not noReskin then
-					ApplySkin("Blizzard",false,false,nil,Button,btndata)
-				end
-				self.Buttons[Button] = nil
-			end,
-			-- Deletes the current group.
-			Delete = function(self,noReskin)
-				local sl = self.SubList
-				if sl then
-					for k in pairs(sl) do
-						Groups[k]:Delete()
-					end
-				end
-				for k in pairs(self.Buttons) do
-					reverse[k] = nil
-					if not noReskin then
-						ApplySkin("Blizzard",false,false,nil,k,self.Buttons[k])
-					end
-					self.Buttons[k] = nil
-				end
-				self.Parent:RemoveSubGroup(self)
-				Groups[self.RegID] = nil
-			end,
-			-- [ Skin ] --
-			-- Updates the groups's skin with the new data and then applies it.
-			Skin = function(self,SkinID,Gloss,Backdrop,Colors)
-				self.SkinID = SkinID and SkinList[SkinID] or self.SkinID
-				if type(Gloss) ~= "number" then
-					Gloss = (Gloss and 1) or 0
-				end
-				self.Gloss = Gloss
-				self.Backdrop = (Backdrop and true) or false
-				if type(Colors) == "table" then
-					self.Colors = Colors
-				end
-				for k in pairs(self.Buttons) do
-					ApplySkin(self.SkinID,self.Gloss,self.Backdrop,self.Colors,k,self.Buttons[k])
-				end
-				FireSkinCB(self.Addon,self.SkinID,self.Gloss,self.Backdrop,self.Group,self.Button,self.Colors)
-				local sl = self.SubList
-				if sl then
-					for k in pairs(sl) do
-						Groups[k]:Skin(SkinID,Gloss,Backdrop,Colors)
-					end
-				end
-			end,
-			-- Reskins the group.
-			ReSkin = function(self)
-				self:Skin(self.SkinID,self.Gloss,self.Backdrop,self.Colors)
-			end,
-			-- [ Internal ] --
-			-- Adds a sub-group to a group.
-			AddSubGroup = function(self,SubGroup)
-				if self.RegID == "ButtonFacade" then
-					self.SubList[SubGroup] = SubGroup
-				else
-					self.SubList[self.RegID.."_"..SubGroup] = SubGroup
-				end
-				FireGuiCB(self.Addon,self.Group,self.Button)
-			end,
-			-- Removes a sub-group from a group.
-			RemoveSubGroup = function(self,SubGroup)
-				local r = SubGroup.RegID
-				self.SubList[r] = nil
-				FireGuiCB(self.Addon,self.Group,self.Button)
-			end,
-			-- [ GUI ] --
-			-- Updates only the specified group's skin data and doesn't apply it.
-			SetSkin = function(self,SkinID,Gloss,Backdrop,Colors)
-				self.SkinID = SkinID and SkinList[SkinID] or self.SkinID
-				if type(Gloss) ~= "number" then
-					Gloss = (Gloss and 1) or 0
-				end
-				self.Gloss = Gloss
-				self.Backdrop = (Backdrop and true) or false
-				if type(Colors) == "table" then
-					self.Colors = Colors
-				end
-				FireSkinCB(self.Addon,self.SkinID,self.Gloss,self.Backdrop,self.Group,self.Button,self.Colors)
-			end,
-			-- Returns a layer's color.
-			GetLayerColor = function(self,Layer)
-				local skin = Skins[self.SkinID or "Blizzard"] or Skins["Blizzard"]
-				return GetLayerColor(skin[Layer],self.Colors,Layer)
-			end,
-			-- Sets a layer's color and optionally reskins the group.
-			SetLayerColor = function(self,Layer,r,g,b,a)
-				if r then
-					self.Colors[Layer] = {r,g,b,a}
-				else
-					self.Colors[Layer] = nil
-				end
-				if not noReskin then self:ReSkin() end
-			end,
-			-- Resets a layer's colors.
-			ResetColors = function(self,noReskin)
-				local c = self.Colors
-				for k in pairs(c) do c[k] = nil end
-				local sl = self.SubList
-				if sl then
-					for k in pairs(sl) do
-						Groups[k]:ResetColors(true)
-					end
-				end
-				if not noReskin then self:Skin() end
-			end,
-		}
-	}
-end
-
--- [ Default Skin ] --
-
-SkinList.DsmFade = "DsmFade"
-Skins.DsmFade = {
-	-- Skin data start.
-	Backdrop = {
-		Width = 40,
-		Height = 40,
-		Color = {1, 1, 1, 0.75},
-		Texture = CalifporniaCFG["media"].buttonbackdrop,
-	},
-	Icon = {
-		Width = 26,
-		Height = 26,
-		TexCoords = {0.07,0.93,0.07,0.93},
-	},
-	Flash = {
-		Width = 40,
-		Height = 40,
-		Color = {1, 0, 0, 0.5},
-		Texture = CalifporniaCFG["media"].buttonoverlay,
-	},
-	Cooldown = {
-		Width = 26,
-		Height = 26,
-	},
-	AutoCast = {
-		Width = 24,
-		Height = 24,
-		OffsetX = 1,
-		OffsetY = -1,
-		AboveNormal = true,
-	},
-	Normal = {
-		Width = 40,
-		Height = 40,
-		Static = true,
-		Color = {0.25, 0.25, 0.25, 1},
-		Texture =CalifporniaCFG["media"].buttonnormal,
-	},
-	Pushed = {
-		Width = 40,
-		Height = 40,
-		Color = {0, 0, 0, 0.5},
-		Texture = CalifporniaCFG["media"].buttonoverlay,
-	},
-	Border = {
-		Width = 40,
-		Height = 40,
-		BlendMode = "ADD",
-		Texture = CalifporniaCFG["media"].buttonborder,
-	},
-	Disabled = {
-		Hide = true,
-	},
-	Checked = {
-		Width = 40,
-		Height = 40,
-		BlendMode = "ADD",
-		Color = {0, 0.75, 1, 0.5},
-		Texture = CalifporniaCFG["media"].buttonborder,
-	},
-	AutoCastable = {
-		Width = 64,
-		Height = 64,
-		OffsetX = 0.5,
-		OffsetY = -0.5,
-		Texture = [[Interface\Buttons\UI-AutoCastableOverlay]],
-	},
-	Highlight = {
-		Width = 40,
-		Height = 40,
-		BlendMode = "ADD",
-		Color = {1, 1, 1, 0.5},
-		Texture = CalifporniaCFG["media"].buttonhighlight,
-	},
-	Gloss = {
-		Width = 40,
-		Height = 40,
-		Texture = CalifporniaCFG["media"].buttongloss,
-	},
-	HotKey = {
-		Width = 40,
-		Height = 10,
-		OffsetX = -2,
-		OffsetY = 10,
-	},
-	Count = {
-		Width = 40,
-		Height = 10,
-		OffsetX = -2,
-		OffsetY = -10,
-	},
-	Name = {
-		Width = 40,
-		Height = 10,
-		OffsetY = -10,
-	},
-	-- Skin data end.
-}
-CalifporniaCFG.BF = LBF
+Califpornia.SkinButton = ApplySkin

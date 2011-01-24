@@ -2,7 +2,7 @@
 -- FRIEND
 --------------------------------------------------------------------
 
-if CalifporniaCFG["datatext"].friends and CalifporniaCFG["datatext"].friends > 0 then
+if CalifporniaCFG["datatext"].friends and Califpornia.CFG["datatext"].friends > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("BACKGROUND")

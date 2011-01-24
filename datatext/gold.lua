@@ -2,7 +2,7 @@
 -- GOLD
 --------------------------------------------------------------------
 
-if CalifporniaCFG["datatext"].gold and CalifporniaCFG["datatext"].gold > 0 then
+if CalifporniaCFG["datatext"].gold and Califpornia.CFG["datatext"].gold > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("BACKGROUND")
@@ -54,10 +54,10 @@ if CalifporniaCFG["datatext"].gold and CalifporniaCFG["datatext"].gold > 0 then
 
 		local myPlayerRealm = GetCVar("realmName");
 		local myPlayerName  = UnitName("player");				
-		if (Data == nil) then Data = {}; end
-		if (Data.gold == nil) then Data.gold = {}; end
-		if (Data.gold[myPlayerRealm]==nil) then Data.gold[myPlayerRealm]={}; end
-		Data.gold[myPlayerRealm][myPlayerName] = GetMoney();
+		if (CalifporniaData == nil) then CalifporniaData = {}; end
+		if (CalifporniaData.gold == nil) then CalifporniaData.gold = {}; end
+		if (CalifporniaData.gold[myPlayerRealm]==nil) then CalifporniaData.gold[myPlayerRealm]={}; end
+		CalifporniaData.gold[myPlayerRealm][myPlayerName] = GetMoney();
 		
 		self:SetScript("OnEnter", function()
 			if not InCombatLockdown() then
@@ -78,7 +78,7 @@ if CalifporniaCFG["datatext"].gold and CalifporniaCFG["datatext"].gold > 0 then
 			
 				local totalGold = 0				
 				GameTooltip:AddLine("Character: ")			
-				local thisRealmList = Data.gold[myPlayerRealm];
+				local thisRealmList = CalifporniaData.gold[myPlayerRealm];
 				for k,v in pairs(thisRealmList) do
 					GameTooltip:AddDoubleLine(k, FormatTooltipMoney(v), 1, 1, 1, 1, 1, 1)
 					totalGold=totalGold+v;
@@ -86,17 +86,6 @@ if CalifporniaCFG["datatext"].gold and CalifporniaCFG["datatext"].gold > 0 then
 				GameTooltip:AddLine' '
 				GameTooltip:AddLine("Server: ")
 				GameTooltip:AddDoubleLine("Total: ", FormatTooltipMoney(totalGold), 1, 1, 1, 1, 1, 1)
-
-				for i = 1, MAX_WATCHED_TOKENS do
-					local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
-					if name and i == 1 then
-						GameTooltip:AddLine(" ")
-						GameTooltip:AddLine(CURRENCY)
-					end
-					local r, g, b = 1,1,1
-					if itemID then r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID))) end
-					if name and count then GameTooltip:AddDoubleLine(name, count, r, g, b, 1, 1, 1) end
-				end
 				GameTooltip:Show()
 			end
 		end)
@@ -119,9 +108,9 @@ if CalifporniaCFG["datatext"].gold and CalifporniaCFG["datatext"].gold > 0 then
 		local myPlayerRealm = GetCVar("realmName");
 		local myPlayerName  = UnitName("player");
 		
-		Data.gold = {}
-		Data.gold[myPlayerRealm]={}
-		Data.gold[myPlayerRealm][myPlayerName] = GetMoney();
+		CalifporniaData.gold = {}
+		CalifporniaData.gold[myPlayerRealm]={}
+		CalifporniaData.gold[myPlayerRealm][myPlayerName] = GetMoney();
 	end
 	SLASH_RESETGOLD1 = "/resetgold"
 	SlashCmdList["RESETGOLD"] = RESETGOLD

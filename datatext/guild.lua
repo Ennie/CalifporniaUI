@@ -2,7 +2,7 @@
 -- GUILD ROSTER
 --------------------------------------------------------------------
 
-if CalifporniaCFG["datatext"].guild and CalifporniaCFG["datatext"].guild > 0 then
+if CalifporniaCFG["datatext"].guild and Califpornia.CFG["datatext"].guild > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("BACKGROUND")

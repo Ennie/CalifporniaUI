@@ -1,16 +1,16 @@
-if not CalifporniaCFG["unitframes"].enable == true then return end
+if CalifporniaCFG["unitframes"].enable ~= true then return end
 
-local statusbar_texture = CalifporniaCFG.media.normTex
-local mfont = CalifporniaCFG.media.uffont
-local playerClass = CalifporniaCFG.myclass
+local statusbar_texture = Califpornia.CFG.media.normTex
+local mfont = Califpornia.CFG.media.uffont
+local playerClass = Califpornia.CFG.myclass
 oUF.colors.smooth = {42/255,48/255,50/255, 42/255,48/255,50/255, 42/255,48/255,50/255}
 oUF.colors.runes = {{0.87, 0.12, 0.23};{0.40, 0.95, 0.20};{0.14, 0.50, 1};{.70, .21, 0.94};}
 local cpColor = {{0.99, 0.31, 0.31};{0.99, 0.31, 0.31};{0.85, 0.83, 0.35};{0.85, 0.83, 0.35};{0.33, 0.99, 0.33};}
 
 --backdrop table
 local backdrop_tab = { 
-	bgFile = CalifporniaCFG.media.bdTex, 
-	edgeFile = CalifporniaCFG.media.bdedgeTex,
+	bgFile = Califpornia.CFG.media.bdTex, 
+	edgeFile = Califpornia.CFG.media.bdedgeTex,
 	tile = false,
 	tileSize = 0, 
 	edgeSize = 5, 
@@ -23,12 +23,7 @@ local backdrop_tab = {
 	},
 }
 
-
-
-
 local error = function(...) print("|cffff0000Error:|r "..string.format(...)) end
-
-
 ------------------------------------------------------------------------
 -- MISC functions
 ------------------------------------------------------------------------
@@ -116,10 +111,24 @@ lib.gen_dropdown = function(f)
 end
  
 -- generate backdrop
-lib.gen_backdrop = function(f)
+lib.gen_backdrop_old = function(f)
 	f:SetBackdrop(backdrop_tab);
 	f:SetBackdropColor(0,0,0,1)
 	f:SetBackdropBorderColor(0,0,0,0.8)
+end
+lib.gen_backdrop = function(anchorFrame, frameLevel, outset)
+	if not outset then
+		outset = 5
+	end
+	local hintFrame = CreateFrame("Frame", nil, anchorFrame)
+	hintFrame:SetPoint("TOPLEFT",-outset,outset)
+	hintFrame:SetPoint("BOTTOMRIGHT",outset,-outset)
+	hintFrame:SetFrameLevel(frameLevel)
+	hintFrame:SetBackdrop(backdrop_tab);
+	hintFrame:SetBackdropColor(0,0,0,1)
+	hintFrame:SetBackdropBorderColor(0,0,0,0.8)
+	hintFrame.origColor = {0,0,0,0.8}
+	return hintFrame
 end
 
 -- generate highlight
@@ -137,7 +146,7 @@ lib.gen_highlight = function(f)
 
 	local hl = f.Health:CreateTexture(nil, "OVERLAY")
 	hl:SetAllPoints(f.Health)
-	hl:SetTexture(CalifporniaCFG.media.hilightTex)
+	hl:SetTexture(Califpornia.CFG.media.hilightTex)
 	hl:SetVertexColor(.5,.5,.5,.1)
 	hl:SetBlendMode("ADD")
 	hl:Hide()
@@ -177,32 +186,18 @@ lib.gen_iconborder = function(f)
 end
 
 -- generate health bar
-lib.gen_hpbar = function(f)
+lib.gen_hpbar = function(f,barheight)
 	--statusbar
 	local s = CreateFrame("StatusBar", nil, f)
-	s:SetStatusBarTexture(statusbar_texture)
+	s:SetStatusBarTexture(Califpornia.CFG.media.normTex)
 	s:GetStatusBarTexture():SetHorizTile(true)
-	s:SetHeight(retVal(f,40,21,14,24,16))
+	s:SetHeight(barheight)
 	s:SetWidth(f:GetWidth())
 	s:SetPoint("TOP",0,0)
 
-	--helper
-	local h = CreateFrame("Frame", nil, s)
-	h:SetFrameLevel(0)
-	h:SetPoint("TOPLEFT",-5,5)
-	if f.mystyle == "target" or f.mystyle == "player" then
-		h:SetPoint("BOTTOMRIGHT",5,-5)
-	elseif f.mystyle == "raid" then
-		h:SetPoint("BOTTOMRIGHT", 5, -9)
-	else
-		h:SetPoint("BOTTOMRIGHT", 5, -11)
-	end
-
-	lib.gen_backdrop(h)
-	f.h = h
 	--bg
 	local b = s:CreateTexture(nil, "BACKGROUND")
-	b:SetTexture(statusbar_texture)
+	b:SetTexture(Califpornia.CFG.media.normTex)
 	b:SetAllPoints(s)
 	b:SetVertexColor(1, 0.1, 0.1,1)
 
@@ -211,92 +206,130 @@ lib.gen_hpbar = function(f)
 end
 
 -- generate hp strings
-lib.gen_hpstrings = function(f)
-	--health/name text strings
-	local name = lib.gen_fontstring(f.Health, mfont, retVal(f,15,12,12,12,10), "NONE")
-	name:SetPoint("LEFT", f.Health, "TOPLEFT", retVal(f,3,3,2,3,3), retVal(f,-10,-10,-7,-10,-7))
+lib.gen_namestring = function(f,fs,ftype)
+	if not ftype then
+		ftype = ''
+	end
+	local name = lib.gen_fontstring(f.Health, Califpornia.CFG.media.uffont, fs, "NONE")
 	name:SetJustifyH("LEFT")
-	local hpval = lib.gen_fontstring(f.Health, mfont, retVal(f,15,12,12,12,10), "NONE")
-	hpval:SetPoint("RIGHT", f.Health, "TOPRIGHT", retVal(f,-3,-3,-3,-3,-3), retVal(f,-10,-10,-7,-10,-10))
-
-	--this will make the name go "..." when its to long
-	if f.mystyle == "raid" then
-		name:SetPoint("RIGHT", f, "RIGHT", -1, 0)
-	else
-		name:SetPoint("RIGHT", hpval, "LEFT", -2, 0)
-	end
-	if f.mystyle == "player" then
+	if ftype == 'player' then
+		name:SetPoint("TOPLEFT", f.Health, "TOPLEFT", 3, -3)
 		f:Tag(name, "[cpuf:level] [cpuf:color][name][cpuf:afkdnd]")
-	elseif f.mystyle == "target" then
-		f:Tag(name, "[cpuf:level] [cpuf:color][name][cpuf:afkdnd]")
-	elseif f.mystyle == "raid" then
+		name:SetPoint("RIGHT", f, "RIGHT", -60, 0)
+	elseif ftype == 'tot' then
+		name:SetPoint("TOPLEFT", f.Health, "TOPLEFT", 3, -3)
+		f:Tag(name, "[cpuf:level] [cpuf:color][name]")
+		name:SetPoint("RIGHT", f, "RIGHT", -22, 0)
+	elseif ftype == 'raid' then
+		name:SetPoint("TOPLEFT", f.Health, "TOPLEFT", 3, -3)
 		f:Tag(name, "[cpuf:afkdnd][cpuf:color][name]")
-	elseif f.mystyle == "group" then
-		f:Tag(name, "[cpuf:level] [cpuf:afkdnd][cpuf:color][name]")
-	else
-		f:Tag(name, "[cpuf:color][name]")
+		name:SetPoint("RIGHT", f, "RIGHT", -10, 0)
 	end
-	f:Tag(hpval, retVal(f,"[cpuf:hp] | [cpuf:color][cpuf:power]","[cpuf:hp]","[cpuf:raidhp]","[cpuf:hp] | [cpuf:color][cpuf:power]","[cpuf:hp]"))
+end
+lib.gen_infostring = function(f,fs,ftype)
+	if not ftype then
+		ftype = ''
+	end
+	local infostr = lib.gen_fontstring(f.Health, Califpornia.CFG.media.uffont, fs, "NONE")
+	infostr:SetJustifyH("RIGHT")
+
+	if ftype == 'player' then
+		f:Tag(infostr, "[cpuf:hp] | [cpuf:color][cpuf:power]")
+		infostr:SetPoint("TOPRIGHT", f.Health, "TOPRIGHT", -1, -3)
+	elseif ftype == 'tot' then
+		f:Tag(infostr, "[cpuf:hp]")
+		infostr:SetPoint("TOPRIGHT", f.Health, "TOPRIGHT", -1, -3)
+	elseif ftype == 'raid' then
+		f:Tag(infostr, "[cpuf:raidhp]")
+		infostr:SetPoint("TOPRIGHT", f.Health, "TOPRIGHT", -1, -3)
+	end
 end
 
 -- gen power bar
-lib.gen_powerbar = function(f)
+lib.gen_powerbar = function(f,barheight)
 	--statusbar
 	local s = CreateFrame("StatusBar", nil, f)
-	s:SetStatusBarTexture(statusbar_texture)
+	s:SetStatusBarTexture(Califpornia.CFG.media.normTex)
 	s:GetStatusBarTexture():SetHorizTile(true)
-	s:SetHeight(retVal(f,15,5,3,12,3))
+	s:SetHeight(barheight)
 	s:SetWidth(f:GetWidth())
 	s:SetPoint("BOTTOM",f,"BOTTOM",0,0)
 
-	--helper
-	if f.mystyle == "target" or f.mystyle == "player" or f.mystyle == "group" then
-		local h = CreateFrame("Frame", nil, s)
-		h:SetFrameLevel(0)
-		h:SetPoint("TOPLEFT",-5,5)
-		h:SetPoint("BOTTOMRIGHT",5,-5)
-		lib.gen_backdrop(h)
-	end
-
 	--bg
 	local b = s:CreateTexture(nil, "BACKGROUND")
-	b:SetTexture(statusbar_texture)
+	b:SetTexture(Califpornia.CFG.media.normTex)
 	b:SetAllPoints(s)
 
 	f.Power = s
 	f.Power.bg = b
 end
 
--- portrait update
-lib.PortraitPostUpdate = function(element, unit)
-	if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
-		element:Hide()
+-- gen alt power bar
+lib.gen_altpowerbar = function(f,btype)
+	--statusbar
+	local s = CreateFrame("StatusBar", nil, f)
+	s:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+	s:GetStatusBarTexture():SetHorizTile(true)
+	s:SetHeight(24)
+	s:SetWidth(180)
+	if btype == 'player' then
+		s:SetPoint("CENTER", UIPARENT, "CENTER", -300, 250)
 	else
-		element:Show()
-		element:SetCamera(0)
+		s:SetPoint("CENTER", UIPARENT, "CENTER", -300, 220)
+	end
+	s:SetStatusBarColor(Califpornia.colors.m_color.r,Califpornia.colors.m_color.g,Califpornia.colors.m_color.b)
+
+	--bg
+	local b = s:CreateTexture(nil, "BACKGROUND")
+	b:SetTexture(Califpornia.CFG.media.normTex)
+	b:SetAllPoints(s)
+	b:SetVertexColor(Califpornia.colors.m_color.r,Califpornia.colors.m_color.g,Califpornia.colors.m_color.b, 0.5) 
+
+	--value
+	local infostr = lib.gen_fontstring(s, Califpornia.CFG.media.uffont, 15, "OUTLINE")
+	infostr:SetJustifyH("RIGHT")
+	infostr:SetPoint("TOPRIGHT", s, "TOPRIGHT", -1, -3)
+	infostr:SetText('0 / 100')
+
+	lib.gen_backdrop(s,0)
+
+	f.AltPowerBar = s
+	f.AltPowerBar = s
+	f.AltPowerBar.bg = b
+
+	f.AltPowerBar.PostUpdate = function(self, min, cur, max)
+		infostr:SetText(cur..' / '..max)
 	end
 end
 
+-- portrait update
+lib.PortraitPostUpdate = function(element, unit)
+--	if not UnitExists(unit) or not UnitIsConnected(unit) or not UnitIsVisible(unit) then
+--		element:Hide()
+--	else
+--		element:Show()
+		element:SetCamera(0)
+--	end
+end
+
 --gen portrait
-lib.gen_portrait = function(f)
+lib.gen_portrait = function(f, w, h, o)
+	if not o then
+		o = 8
+	end
 	-- portrait
 	local p = CreateFrame("PlayerModel", nil, f)
 	p:SetFrameLevel(4)
-	p:SetHeight(26)
-	p:SetWidth(f:GetWidth()-16)
-	p:SetPoint("BOTTOM", f, "BOTTOM", 0, 8)
+	p:SetHeight(h)
+	p:SetWidth(w)
+	p:SetPoint("BOTTOM", f, "BOTTOM", 0, o)
 
-	--helper
-	local h = CreateFrame("Frame", nil, p)
-	h:SetFrameLevel(3)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
+	lib.gen_backdrop(p,4)
 	
 	-- highlight
 	local hl = p:CreateTexture(nil, "OVERLAY")
 	hl:SetAllPoints(p)
-	hl:SetTexture(CalifporniaCFG.media.portraitTex)
+	hl:SetTexture(Califpornia.CFG.media.portraitTex)
 	hl:SetVertexColor(.5,.5,.5,.8)
 	hl:SetBlendMode("ALPHAKEY")
 	p.PostUpdate = lib.PortraitPostUpdate
@@ -332,7 +365,7 @@ local myPostCreateIcon = function(self, button)
 	h:SetFrameLevel(0)
 	h:SetPoint("TOPLEFT",-5,5)
 	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
+	lib.gen_backdrop_old(h)
 	lib.gen_iconborder(h)
 end	
   
@@ -366,21 +399,39 @@ local myPostUpdateIcon = function(self, unit, icon, index, offset, filter, isDeb
 end
 
 -- generate auras
-lib.gen_auras = function(f)
+lib.gen_auras = function(f,rtype)
+	if not rtype then
+		rtype = 'default'
+	end
 	Auras = CreateFrame("Frame", nil, f)
-	Auras.size = Califpornia.CFG.unitframes.iconsize		
-	Auras:SetHeight(41)
-	Auras:SetWidth(245)
-	Auras.spacing = 5
-	if f.mystyle == "target" then
+	if rtype == "target" then
+		Auras.size = Califpornia.CFG.unitframes.iconsize		
+		Auras:SetHeight(41)
+		Auras:SetWidth(f:GetWidth())
+		Auras.spacing = 5
 		Auras.numBuffs = 20
 		Auras.numDebuffs = 25
+		Auras.gap = true
+		Auras:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -8)
+	elseif rtype == "raid" then
+		Auras.size = f.Health:GetHeight()
+		Auras:SetHeight(f:GetHeight())
+		Auras:SetWidth(5*Auras.size)
+		Auras.spacing = 5
+		Auras.numBuffs = 0
+		Auras.numDebuffs = 5
+		Auras.gap = true
+		Auras:SetPoint("TOPLEFT", f.Health, "TOPRIGHT", 6, 0)
 	else
+		Auras.size = f:GetHeight()/2-3
+		Auras:SetHeight(f:GetHeight())
+		Auras:SetWidth(5*Auras.size)
+		Auras.spacing = 5
 		Auras.numBuffs = 5
 		Auras.numDebuffs = 5
+		Auras.gap = true
+		Auras:SetPoint("TOPLEFT", f, "TOPRIGHT", 6, 0)
 	end
-	Auras.gap = true
-	Auras:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -10)
 	Auras.initialAnchor = "TOPLEFT"
 	Auras["growth-x"] = "RIGHT"		
 	Auras["growth-y"] = "DOWN"
@@ -403,7 +454,7 @@ lib.gen_raidmark = function(f)
 	ri:SetPoint("CENTER", f, "TOP", 0, 2)
 	local size = retVal(f, 16, 13, 12, 16, 16)
 	ri:SetSize(size, size)
-	ri:SetTexture(CalifporniaCFG.media.raidIcons)
+	ri:SetTexture(Califpornia.CFG.media.raidIcons)
 
 	f.RaidIcon = ri
 end
@@ -448,16 +499,16 @@ lib.gen_pvpicon = function(f)
 	h:SetFrameLevel(10)
 	f.PvP = h:CreateTexture(nil, "OVERLAY")
 	local faction = PvPCheck
-		if faction == "Horde" then
-			f.PvP:SetTexCoord(0.08, 0.58, 0.045, 0.545)
-		elseif faction == "Alliance" then
-			f.PvP:SetTexCoord(0.07, 0.58, 0.06, 0.57)
-		else
-			f.PvP:SetTexCoord(0.05, 0.605, 0.015, 0.57)
-		end
-	f.PvP:SetHeight(16)
-	f.PvP:SetWidth(16)
-	f.PvP:SetPoint('BOTTOMLEFT', 10, 13)
+	if faction == "Horde" then
+		f.PvP:SetTexCoord(0.08, 0.58, 0.045, 0.545)
+	elseif faction == "Alliance" then
+		f.PvP:SetTexCoord(0.07, 0.58, 0.06, 0.57)
+	else
+		f.PvP:SetTexCoord(0.05, 0.605, 0.015, 0.57)
+	end
+	f.PvP:SetHeight(14)
+	f.PvP:SetWidth(14)
+	f.PvP:SetPoint('TOPRIGHT', -8, 10)
 --	f.PvP:SetPoint("TOP", 0, 10)
 end
 
@@ -470,23 +521,27 @@ lib.gen_playericons = function (f)
 	-- combat icon
 	f.Combat = h:CreateTexture(nil, 'OVERLAY')
 	f.Combat:SetSize(15,15)
-	f.Combat:SetPoint('BOTTOMRIGHT', -10, 13)
+	f.Combat:SetPoint('RIGHT', f.Portrait, -4, 0)
 	f.Combat:SetTexture('Interface\\CharacterFrame\\UI-StateIcon')
 	f.Combat:SetTexCoord(0.58, 0.90, 0.08, 0.41)
 
 	-- rest icon
 	f.Resting = h:CreateTexture(nil, 'OVERLAY')
 	f.Resting:SetSize(14,14)
-	f.Resting:SetPoint('BOTTOMLEFT', 30, 13)
+	f.Resting:SetPoint('LEFT', f.Portrait, 4, 0)
 	f.Resting:SetTexture('Interface\\CharacterFrame\\UI-StateIcon')
 	f.Resting:SetTexCoord(0.09, 0.43, 0.08, 0.42)
 end
 
 -- LFD Role icon
-lib.gen_lfdicon = function(f)
+lib.gen_lfdicon = function(f, isRaid)
 	f.LFDRole = f.Power:CreateTexture(nil, 'OVERLAY')
 	f.LFDRole:SetSize(13, 13)
-	f.LFDRole:SetPoint('CENTER', f, 'RIGHT', 1, 0)
+	if isRaid then
+		f.LFDRole:SetPoint('CENTER', f, 'LEFT', -2, 0)
+	else
+		f.LFDRole:SetPoint('CENTER', f.Power, 'TOPRIGHT', 2, 0)
+	end
 end
 
 -- phase icon 
@@ -510,22 +565,19 @@ end
 -- class specific elements
 -- COMBOPOINTS
 lib.gen_cpbar = function(self)
-	if (playerClass ~= "ROGUE" and playerClass ~= "DRUID") then return end
+	if (Califpornia.myclass ~= "ROGUE" and Califpornia.myclass ~= "DRUID") or not Califpornia.CFG.unitframes.combobar then return end
 
 	local combobar =  CreateFrame('Frame', nil, self)
 	combobar:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
 	combobar:SetHeight(4)
 	combobar:SetWidth(self.Portrait:GetWidth())
-	local h = CreateFrame("Frame", nil, combobar)
-	h:SetFrameLevel(3)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
+	self.Portrait:SetHeight(self.Portrait:GetHeight() - 4)
+	lib.gen_backdrop(combobar,3)
 
 	for i = 1, MAX_COMBO_POINTS do
 		local cpoint = CreateFrame('StatusBar', nil, combobar)
 		cpoint:SetSize((self.Portrait:GetWidth() / MAX_COMBO_POINTS)-2, 4)
-		cpoint:SetStatusBarTexture(statusbar_texture)
+		cpoint:SetStatusBarTexture(Califpornia.CFG.media.normTex)
 		cpoint:SetFrameLevel(4)
 		cpoint:SetStatusBarColor(unpack(cpColor[i]))
 		if (i == 1) then
@@ -535,7 +587,7 @@ lib.gen_cpbar = function(self)
 		end
 		local cpointBG = cpoint:CreateTexture(nil, 'BACKGROUND')
 		cpointBG:SetAllPoints(cpoint)
-		cpointBG:SetTexture(statusbar_texture)
+		cpointBG:SetTexture(Califpornia.CFG.media.normTex)
 		cpoint.bg = cpointBG
 		cpoint.bg.multiplier = 0.3
 		combobar[i] = cpoint
@@ -543,55 +595,95 @@ lib.gen_cpbar = function(self)
 
 	self.CPoints = combobar
 end
--- HOLY POWER
--- HolyPowerbar
-local hpOverride = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
 
-	local hp = self.HolyPower
-	if(hp.PreUpdate) then hp:PreUpdate(unit) end
+-- Class Bars
+lib.gen_classbar = function(self)
+	if CalifporniaCFG.unitframes.classbar and (Califpornia.myclass == "WARLOCK" or Califpornia.myclass == "DEATHKNIGHT" or Califpornia.myclass == "PALADIN" or Califpornia.myclass == "DRUID" or Califpornia.myclass == "SHAMAN") then 
+		local barFrame = CreateFrame("Frame", nil, self)
+		barFrame:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
+		barFrame:SetHeight(4)
+		barFrame:SetWidth(self.Portrait:GetWidth())
+		barFrame:SetFrameLevel(4)
+		self.Portrait:SetHeight(self.Portrait:GetHeight() - 4)
 
-	local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
-	for i = 1, MAX_HOLY_POWER do
-		if(i <= num) then
-			hp[i]:SetAlpha(1)
-		else
-			hp[i]:SetAlpha(0.2)
+		-- shaman totem bar with backdrops is just ugly
+		if Califpornia.myclass ~= "SHAMAN" then
+			lib.gen_backdrop(barFrame,3)
 		end
+
+		-- Holy Power
+		if Califpornia.myclass == "PALADIN" then
+			local hpOverride = function(self, event, unit, powerType)
+				if(self.unit ~= unit or (powerType and powerType ~= "HOLY_POWER")) then return end
+				
+				local hp = self.HolyPower
+				if(hp.PreUpdate) then hp:PreUpdate(unit) end
+				
+				local num = UnitPower(unit, SPELL_POWER_HOLY_POWER)
+				for i = 1, MAX_HOLY_POWER do
+					if(i <= num) then
+						hp[i]:SetAlpha(1)
+					else
+						hp[i]:SetAlpha(0.2)
+					end
+				end
+			end
+			
+			for i = 1, 3 do
+				local holyShard = CreateFrame("StatusBar", self:GetName().."_Holypower"..i, self)
+				holyShard:SetHeight(4)
+				holyShard:SetWidth((barFrame:GetWidth() / 3)-2)
+				holyShard:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+				holyShard:SetStatusBarColor(1,1,0)
+				holyShard:SetFrameLevel(4)
+				
+				if (i == 1) then
+					holyShard:SetPoint("LEFT", barFrame, "LEFT", 0, 0)
+				else
+					holyShard:SetPoint("TOPLEFT", barFrame[i-1], "TOPRIGHT", 3, 0)
+				end
+				barFrame[i] = holyShard
+			end
+			self.HolyPower = barFrame
+			self.HolyPower.Override = hpOverride
+		elseif Califpornia.myclass == "WARLOCK" then
+			local ssOverride = function(self, event, unit, powerType)
+				if(self.unit ~= unit or (powerType and powerType ~= "SOUL_SHARDS")) then return end
+				local ss = self.SoulShards
+				local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
+				for i = 1, SHARD_BAR_NUM_SHARDS do
+					if(i <= num) then
+						ss[i]:SetAlpha(1)
+					else
+						ss[i]:SetAlpha(0.2)
+					end
+				end
+			end
+			
+			for i= 1, 3 do
+				local shard = CreateFrame("StatusBar", nil, barFrame)
+				shard:SetHeight(4)
+				shard:SetWidth((barFrame:GetWidth() / 3)-2)
+				shard:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+				shard:SetStatusBarColor(.86,.44, 1)
+				shard:SetFrameLevel(4)
+				
+				if (i == 1) then
+					shard:SetPoint("LEFT", barFrame, "LEFT", 0, 0)
+				else
+					shard:SetPoint("TOPLEFT", barFrame[i-1], "TOPRIGHT", 3, 0)
+				end
+				barFrame[i] = shard
+			end
+			self.SoulShards = barFrame
+			self.SoulShards.Override = ssOverride
+		end
+
 	end
 end
 
-lib.gen_holypower = function(self)
-	if playerClass ~= "PALADIN" then return end
-	
-	self.HolyPower = CreateFrame("Frame", nil, self)
-	self.HolyPower:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	self.HolyPower:SetHeight(4)
-	self.HolyPower:SetWidth(self.Portrait:GetWidth())
-	local h = CreateFrame("Frame", nil, self.HolyPower)
-	h:SetFrameLevel(3)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
-		
-	for i = 1, 3 do
-		self.HolyPower[i] = CreateFrame("StatusBar", self:GetName().."_Holypower"..i, self)
-		self.HolyPower[i]:SetHeight(4)
-		self.HolyPower[i]:SetWidth((self.Portrait:GetWidth() / 3)-2)
-		self.HolyPower[i]:SetStatusBarTexture(statusbar_texture)
---		self.HolyPower[i]:SetStatusBarColor(.9,.95,.33)
-		self.HolyPower[i]:SetStatusBarColor(1,1,0)
-		self.HolyPower[i]:SetFrameLevel(4)
 
-		if (i == 1) then
-			self.HolyPower[i]:SetPoint('LEFT', self.HolyPower, 'LEFT', 1, 0)
-		else
-			self.HolyPower[i]:SetPoint('TOPLEFT', self.HolyPower[i-1], "TOPRIGHT", 2, 0)
-		end
-	end
 
-	self.HolyPower.Override = hpOverride
-end
 
 -- DRUID MANA
 lib.gen_druidmana = function(self)
@@ -607,12 +699,12 @@ lib.gen_druidmana = function(self)
 	bd:SetFrameLevel(4)
 	bd:SetPoint("TOPLEFT",-5,5)
 	bd:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(bd)
+	lib.gen_backdrop_old(bd)
 
 	local ManaBar = CreateFrame('StatusBar', nil, druidManaBar)
 	ManaBar:SetPoint('LEFT', druidManaBar, 'LEFT', 0, 0)
 	ManaBar:SetSize(druidManaBar:GetWidth(), druidManaBar:GetHeight())
-	ManaBar:SetStatusBarTexture(statusbar_texture)
+	ManaBar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
 	ManaBar:GetStatusBarTexture():SetHorizTile(true)
 	ManaBar:SetFrameLevel(5)
 
@@ -646,7 +738,7 @@ lib.gen_eclipse = function(self)
 	local h = CreateFrame("Frame", nil, eclipseBar)
 	h:SetPoint("TOPLEFT",-5,5)
 	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
+	lib.gen_backdrop_old(h)
 	eclipseBar.eBarBG = h
 
 	local lunarBar = CreateFrame('StatusBar', nil, eclipseBar)
@@ -690,7 +782,7 @@ lib.gen_totembar = function(self)
 	bd:SetFrameLevel(4)
 	bd:SetPoint("TOPLEFT",-5,5)
 	bd:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(bd)
+	lib.gen_backdrop_old(bd)
 	TotemBar.BackDrop = bd
 	for i = 1, 4 do
 		local t = CreateFrame("Frame", nil, TotemBar)
@@ -710,54 +802,6 @@ lib.gen_totembar = function(self)
 	self.TotemBar = TotemBar
 end
 
--- SOUL SHARDS
-local ssOverride = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'SOUL_SHARDS')) then return end
-
-	local ss = self.SoulShards
-
-	local num = UnitPower(unit, SPELL_POWER_SOUL_SHARDS)
-	for i = 1, SHARD_BAR_NUM_SHARDS do
-		if(i <= num) then
-			ss[i]:SetAlpha(1)
-		else
-			ss[i]:SetAlpha(0.2)
-		end
-	end
-end
-
-lib.gen_soulshards = function(self)
-	if playerClass ~= "WARLOCK" then return end
-	
-	local shards = CreateFrame('Frame', nil, self)
-	shards:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	shards:SetHeight(4)
-	shards:SetWidth(self.Portrait:GetWidth())
-	local h = CreateFrame("Frame", nil, shards)
-	h:SetFrameLevel(3)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
-	
-	for i= 1, 3 do
-		local shard = CreateFrame('StatusBar', nil, shards)
-		shard:SetSize((self.Portrait:GetWidth() / 3)-2, 4)
-		shard:SetStatusBarTexture(statusbar_texture)
-		shard:SetStatusBarColor(.86,.44, 1)
-		shard:SetFrameLevel(4)
-		
-		if (i == 1) then
-			shard:SetPoint('LEFT', shards, 'LEFT', 1, 0)
-		else
-			shard:SetPoint('TOPLEFT', shards[i-1], "TOPRIGHT", 2, 0)
-		end
-
-		shards[i] = shard
-	end
-	self.SoulShards = shards
-	self.SoulShards.Override = ssOverride
-end
-
 -- RUNE BAR
 lib.gen_runebar = function(self)
 	if playerClass ~= "DEATHKNIGHT" then return end
@@ -770,7 +814,7 @@ lib.gen_runebar = function(self)
 	h:SetFrameLevel(3)
 	h:SetPoint("TOPLEFT",-5,5)
 	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h)
+	lib.gen_backdrop_old(h)
 	
 	for i= 1, 6 do
 		local rune = CreateFrame('StatusBar', nil, runes)
@@ -795,50 +839,25 @@ end
 
 -- THREAT BORDERS
 -- Create Threat Status Border
-lib.gen_threatborder = function(self)
-	local glowBorder = {edgeFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeSize = 2}
-	self.Thtborder = CreateFrame("Frame", nil, self)
-	self.Thtborder:SetPoint("TOPLEFT", self, "TOPLEFT", -2, 2)
-	self.Thtborder:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 2, -2)
-	self.Thtborder:SetBackdrop(glowBorder)
-	self.Thtborder:SetFrameLevel(1)
-	self.Thtborder:Hide()	
+lib.gen_ttborder = function(self)
+	self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", lib.UpdBorder)
+	self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", lib.UpdBorder)
+--	self:RegisterEvent('PLAYER_TARGET_CHANGED', lib.UpdBorder)
+	self:RegisterEvent('PARTY_MEMBERS_CHANGED', lib.UpdBorder)
 end
   
 -- Raid Frames Threat Highlight
-function lib.UpdateThreat(self, event, unit)
-	if (self.unit ~= unit) then return end
-	local status = UnitThreatSituation(unit)
-	unit = unit or self.unit
-	if status and status > 1 then
+function lib.UpdBorder(self, event, unit)
+	local mytarget = UnitIsUnit('target', self.unit)
+	local status = UnitThreatSituation(self.unit)
+---	if mytarget then
+--		self.bd:SetBackdropBorderColor(.7,.7,.7,0.8)
+--	elseif status and status then
+	if status and status then
 		local r, g, b = GetThreatStatusColor(status)
-		self.Thtborder:Show()
-		self.Thtborder:SetBackdropBorderColor(r, g, b, 1)
-	else
-		self.Thtborder:SetBackdropBorderColor(r, g, b, 0)
-		self.Thtborder:Hide()
-	end
-end
-
--- target border
--- Create Target Border
-lib.gen_targetborder = function(self)
-	local glowBorder = {edgeFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeSize = 1}
-	self.TargetBorder = CreateFrame("Frame", nil, self)
-	self.TargetBorder:SetPoint("TOPLEFT", self, "TOPLEFT", -1, 1)
-	self.TargetBorder:SetPoint("BOTTOMRIGHT", self, "BOTTOMRIGHT", 1, -1)
-	self.TargetBorder:SetBackdrop(glowBorder)
-	self.TargetBorder:SetFrameLevel(2)
-	self.TargetBorder:SetBackdropBorderColor(.7,.7,.7,1)
-	self.TargetBorder:Hide()
-end
-
--- Raid Frames Target Highlight Border
-function lib.ChangedTarget(self, event, unit)
-	if UnitIsUnit('target', self.unit) then
-		self.TargetBorder:Show()
-	else
-		self.TargetBorder:Hide()
+		self.bd:SetBackdropBorderColor(r, g, b, 0.8)
+	else	
+		self.bd:SetBackdropBorderColor(unpack(self.bd.origColor))
 	end
 end
 
@@ -847,7 +866,7 @@ end
 lib.gen_debuff_hl = function(self)
 	local dbh = self.Health:CreateTexture(nil, "OVERLAY")
 	dbh:SetAllPoints(self.Health)
-	dbh:SetTexture(CalifporniaCFG.media.debuff_hl)
+	dbh:SetTexture(Califpornia.CFG.media.debuff_hl)
 	dbh:SetBlendMode("ADD")
 	dbh:SetVertexColor(0,0,0,0) -- set alpha to 0 to hide the texture
 	self.DebuffHighlight = dbh
@@ -855,228 +874,196 @@ lib.gen_debuff_hl = function(self)
 	self.DebuffHighlightFilter = true
 end
 
--- Raid Debuffs
-
-lib.gen_raiddebuffs = function(f)
-	local instDebuffs = {}
-	local instances = CalifporniaCFG.raid_debuffs.instances
-	local getzone = function()
-		local zone = GetInstanceInfo()
-		if instances[zone] then
-			instDebuffs = instances[zone]
-		else
-			instDebuffs = {}
-		end
-	end
-
-	local debuffs = CalifporniaCFG.raid_debuffs.debuffs
-	local CustomFilter = function(icons, ...)
-		local _, icon, name, _, _, _, dtype, _, _, _, _, _, spellid = ...
-		if instDebuffs[name] then
-			icon.priority = instDebuffs[name]
-			return true
-		elseif instDebuffs[spellid] then
-			icon.priority = instDebuffs[spellid]
-			return true
-		elseif debuffs[name] then
-			icon.priority = debuffs[name]
-			return true
-		elseif debuffs[spellid] then
-			icon.priority = debuffs[spellid]
-			return true
-		else
-			icon.priority = 0
-		end
-	end
-
-	local dbsize = 12
-	local rdebuffs = CreateFrame("Frame", nil, f)
-	rdebuffs:SetWidth(dbsize)
-	rdebuffs:SetHeight(dbsize)
-	rdebuffs:SetPoint("BOTTOMLEFT", 1, 2)
-	rdebuffs.size = dbsize
-	rdebuffs.CustomFilter = CustomFilter
-
-	f.raidDebuffs = rdebuffs
+-- oUF_CombatFeedback
+lib.gen_combatfeedback = function(f)
+	local cbft = lib.gen_fontstring(f.Portrait, Califpornia.CFG.media.uffont, 15, "OUTLINE")
+	cbft:SetPoint("CENTER", f.Portrait, "CENTER")
+	cbft.maxAlpha = 1
+	f.CombatFeedbackText = cbft
 end
 
 -- CAST BARS
-lib.gen_castbar = function(f)
-	if not CalifporniaCFG.unitframes.unitcastbar then return end
-	local cbColor = {95/255, 182/255, 255/255}
-	local s = CreateFrame("StatusBar", "oUF_CpUICastbar"..f.mystyle, f)
-	if f.mystyle == "player" then
-		s:SetHeight(20)
-		s:SetWidth(230)
-		s:SetPoint("BOTTOMRIGHT",UIParent,"BOTTOM",-24,150)
-	elseif f.mystyle == "target" then
-		s:SetHeight(20)
-		s:SetWidth(245)
-		s:SetPoint("BOTTOMLEFT",UIParent,"BOTTOM",24,150)
-	elseif f.mystyle == "pet" then
-		s:SetHeight(20)
-		s:SetWidth(230)
-		s:SetPoint("BOTTOMRIGHT",UIParent,"BOTTOM",-24,176)
-	else
-		s:SetHeight(20)
-		s:SetWidth(200)
-		s:SetPoint("CENTER",UIParent,"CENTER",10,300)
+local cbDefaultColor = {137/255, 153/255, 170/255}
+
+local function customTimeText(element, duration)
+	element.Time:SetFormattedText("%.1f / %.1f", element.channeling and duration or (element.max - duration), element.max)
+end
+
+local function customDelayText(element, duration)
+	element.Time:SetFormattedText("%.1f |cffff0000-%.1f|r / %.1f", element.channeling and duration or (element.max - duration), element.delay, element.max)
+end
+
+local function postCastStart(element, unit)
+	if element.Text then
+		local text = element.Text:GetText()
+		element.Text:SetText("|cffffff88"..text.."|r")
 	end
+		local cbColor = RAID_CLASS_COLORS[select(2,  UnitClass(unit))]	
+		local myMulti = 0.2
+		if UnitIsPlayer(unit) and cbColor then
+			element:SetStatusBarColor(cbColor.r, cbColor.g, cbColor.b)
+		else
+			element:SetStatusBarColor(cbDefaultColor[1], cbDefaultColor[2], cbDefaultColor[3])	
+		end
+end
 
-	s:SetStatusBarTexture(statusbar_texture)
-	s:SetStatusBarColor(95/255, 182/255, 255/255,1)
-	s:SetFrameLevel(1)
+lib.gen_castbar = function(self, unit)
+	local cbHeight = 16
 
-	s.CastingColor = cbColor
-	s.CompleteColor = {20/255, 208/255, 0/255}
-	s.FailColor = {255/255, 12/255, 0/255}
-	s.ChannelingColor = cbColor
+	local castbar = CreateFrame("StatusBar", "CalifporniaUICastbar"..unit, f)
+	castbar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+	castbar:SetFrameLevel(5)
+	
+	lib.gen_backdrop(castbar, 0)
 
-	local h = CreateFrame("Frame", nil, s)
-	h:SetFrameLevel(0)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	h:SetFrameLevel(1)
-	lib.gen_backdrop(h)
+	local bgoverlay = castbar:CreateTexture(nil, "BACKGROUND", nil, -5)
+	bgoverlay:SetPoint("TOPLEFT", castbar,"TOPLEFT", 0, 0)
+	bgoverlay:SetPoint("BOTTOMRIGHT", castbar,"BOTTOMRIGHT", 0, 0)
+	bgoverlay:SetTexture(Califpornia.CFG.media.portraitTex)
+	bgoverlay:SetVertexColor(0, 0, 0, 0.8)
 
-	sp = s:CreateTexture(nil, "OVERLAY")
-	sp:SetBlendMode("ADD")
-	sp:SetAlpha(0.5)
-	sp:SetHeight(s:GetHeight()*2.5)
+	local castbarDummy = CreateFrame("Frame", nil, castbar)
+	castbarDummy:SetSize(cbHeight, cbHeight)
+	castbarDummy:SetPoint("TOPRIGHT", castbar, "TOPLEFT", -5, 0)
+	lib.gen_backdrop(castbarDummy, 0)
 
-	local txt = lib.gen_fontstring(s, mfont, 12, "NONE")
-	txt:SetPoint("LEFT", 2, 0)
-	txt:SetJustifyH("LEFT")
+	local castbarIcon = castbarDummy:CreateTexture(nil, "ARTWORK")
+	castbarIcon:SetAllPoints(castbarDummy)
+	castbarIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	castbar.Icon = castbarIcon
 
-	local t = lib.gen_fontstring(s, mfont, 12, "NONE")
-	t:SetPoint("RIGHT", -2, 0)
-	txt:SetPoint("RIGHT", t, "LEFT", -5, 0)
+	if unit == "player" then
+		castbar:SetSize(186, cbHeight)
+		castbar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -4,115)
+	elseif unit == "target" then
+		castbar:SetSize(186, cbHeight)
+		castbar:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 25,115)
+	elseif unit == "focus" then
+		castbar:SetSize(200, cbHeight)
+		castbar:SetPoint("CENTER", UIPARENT, "CENTER", 10, 220)
+	elseif unit == "pet" then
+		castbar:SetSize(186, cbHeight)
+		castbar:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -4,140)
+	end
+		local castbarBG = castbar:CreateTexture(nil, "BACKGROUND", nil, -6)
+		castbarBG:SetAllPoints(castbar)
+		castbar.bg = castbarBG
 
-	local i = s:CreateTexture(nil, "ARTWORK")
-	i:SetSize(s:GetHeight(),s:GetHeight())
-	i:SetPoint("RIGHT", s, "LEFT", -4.5, 0)
-	i:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-
-	if f.mystyle ~= "player" then
-		-- generate shield
-		local shield = s:CreateTexture(nil, "BACKGROUND")
+		local castbarTime = lib.gen_fontstring(castbar, unpack(Califpornia.CFG.unitframes.cbfont))
+		castbarTime:SetPoint("RIGHT", castbar, "RIGHT", -2, 0)
+		castbarTime:SetJustifyH("RIGHT")
+		castbar.Time = castbarTime
+		
+		local castbarText = lib.gen_fontstring(castbar, unpack(Califpornia.CFG.unitframes.cbfont))
+		castbarText:SetPoint("LEFT", castbar, "LEFT", 2, 0)
+		castbarText:SetPoint("RIGHT", castbarTime, "LEFT", -4, 0)
+		castbarText:SetJustifyH("LEFT")
+		castbar.Text = castbarText
+	
+	if unit == "player" then
+		castbar.SafeZone = castbar:CreateTexture(nil, "OVERLAY", nil, -4)
+		castbar.SafeZone:SetAlpha(0.35)
+	elseif unit == "target" or unit == "focus" then
+		local shield = castbar:CreateTexture(nil, "BACKGROUND")
 		shield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Small-Shield")
 		shield:SetTexCoord(0, 36/256, 0, 1)
-		shield:SetWidth(36)
-		shield:SetHeight(64)
-		shield:SetPoint("CENTER", i, "CENTER", -2, -1)
+		shield:SetWidth(24)
+		shield:SetHeight(48)
+		shield:SetPoint("CENTER", castbar.Icon, "CENTER", 0, 0)
 		shield:Hide()
-		s.Shield = shield
+		castbar.Shield = shield
 	end
 	
-	local h2 = CreateFrame("Frame", nil, s)
-	h2:SetFrameLevel(0)
-	h2:SetPoint("TOPLEFT",i,"TOPLEFT",-5,5)
-	h2:SetPoint("BOTTOMRIGHT",i,"BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop(h2)
 
-	if f.mystyle == "player" then
-		local z = s:CreateTexture(nil,"OVERLAY")
-		z:SetTexture(statusbar_texture)
-		z:SetVertexColor(1,0.1,0,.6)
-		z:SetPoint("TOPRIGHT")
-		z:SetPoint("BOTTOMRIGHT")
-		s:SetFrameLevel(10)
-		s.SafeZone = z
-
-		local l = lib.gen_fontstring(s, mfont, 10, "THINOUTLINE")
-		l:SetPoint("CENTER", -2, 17)
-		l:SetJustifyH("RIGHT")
-		l:Hide()
-		s.Lag = l
-		f:RegisterEvent("UNIT_SPELLCAST_SENT", CalifporniaCFG.castbar.OnCastSent)
+	local spark = castbar:CreateTexture(nil, "OVERLAY")
+	spark:SetBlendMode("ADD")
+	spark:SetAlpha(0.3)
+	spark:SetHeight(cbHeight*2.5)
+	castbar.Spark = spark
+	
+	self.Castbar = castbar
+	if castbar.Time then 
+		self.Castbar.CustomTimeText = customTimeText
+		self.Castbar.CustomDelayText = customDelayText
 	end
-
-	s.OnUpdate = CalifporniaCFG.castbar.OnCastbarUpdate
-	s.PostCastStart = CalifporniaCFG.castbar.PostCastStart
-	s.PostChannelStart = CalifporniaCFG.castbar.PostCastStart
-	s.PostCastStop = CalifporniaCFG.castbar.PostCastStop
-	s.PostChannelStop = CalifporniaCFG.castbar.PostChannelStop
-	s.PostCastFailed = CalifporniaCFG.castbar.PostCastFailed
-	s.PostCastInterrupted = CalifporniaCFG.castbar.PostCastFailed
-
-	f.Castbar = s
-	f.Castbar.Text = txt
-	f.Castbar.Time = t
-	f.Castbar.Icon = i
-	f.Castbar.shield = i
-	f.Castbar.Spark = sp
+	self.Castbar.PostCastStart = postCastStart
+	self.Castbar.PostChannelStart = postCastStart
 end
-------------------------------------------------------------------------
--- STYLE function
-------------------------------------------------------------------------
-local function Shared(self, unit)
-	-- shared
+
+lib.init = function(self)
 	self.menu = lib.gen_dropdown
 
 	-- register for clicks
 	self:RegisterForClicks("AnyUp")
 	self:SetScript('OnEnter', UnitFrame_OnEnter)
 	self:SetScript('OnLeave', UnitFrame_OnLeave)
-
-	-- per unit
-	if (unit == "player") then
-
+end
+------------------------------------------------------------------------
+-- STYLE function
+------------------------------------------------------------------------
+local function CreatePlayerStyle(self, unit, isSingle)
+		lib.init(self)
 		self.mystyle = "player"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(220, 60)
+		self:SetSize(220, 54)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self,37)
+		lib.gen_namestring(self, 15, 'player')
+		lib.gen_infostring(self, 15, 'player')
+		lib.gen_powerbar(self,15)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
+		lib.gen_portrait(self, self:GetWidth()-16, 24)
+		lib.gen_combatfeedback(self)
 		lib.gen_raidmark(self)
-		lib.gen_portrait(self)
 		lib.gen_infoicons(self)
 		lib.gen_playericons(self)
 		lib.gen_lfdicon(self)
 		lib.gen_pvpicon(self)
+
 		-- castbar
-		lib.gen_castbar(self)
-		--style specific stuff
+		lib.gen_castbar(self, 'player')
+
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorClass = true
 		self.Power.bg.multiplier = 0.5
 
 		-- class specific
-		if CalifporniaCFG.unitframes.holypower then lib.gen_holypower(self) end
-		if CalifporniaCFG.unitframes.druidmana then lib.gen_druidmana(self) end
-		if CalifporniaCFG.unitframes.eclipsebar then lib.gen_eclipse(self) end
-		if CalifporniaCFG.unitframes.totembar then lib.gen_totembar(self) end
-		if CalifporniaCFG.unitframes.soulshards then lib.gen_soulshards(self) end
-		if CalifporniaCFG.unitframes.runebar then lib.gen_runebar(self) end
+		lib.gen_classbar(self)
 
 		-- plugins
 		lib.gen_debuff_hl(self)
-	end
-
-	if (unit == "target") then
+		lib.gen_altpowerbar(self,'player')
+end
+local function CreateTargetStyle(self, unit, isSingle)
+		lib.init(self)
 
 		self.mystyle = "target"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(220, 60)
+		self:SetSize(220, 54)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self,37)
+		lib.gen_namestring(self, 15, 'player')
+		lib.gen_infostring(self, 15, 'player')
+		lib.gen_powerbar(self,15)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
+		lib.gen_portrait(self, self:GetWidth()-16, 24)
+		lib.gen_combatfeedback(self)
 		lib.gen_raidmark(self)
-		lib.gen_portrait(self)
+
 		-- castbar
-		lib.gen_castbar(self)
-		--style specific stuff
+		lib.gen_castbar(self, 'target')
+
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1084,35 +1071,39 @@ local function Shared(self, unit)
 		self.Power.colorHappiness = false
 		self.Power.colorClass = true
 		self.Power.colorReaction = true
-		self.Power.colorClass = true
 		self.Power.bg.multiplier = 0.5
 
 		lib.gen_infoicons(self)
 		lib.gen_pvpicon(self)
 		lib.gen_phaseicon(self)
 		lib.gen_questicon(self)
-		lib.gen_auras(self)
+		lib.gen_auras(self,'target')
 
 		-- class specific
-		if CalifporniaCFG.unitframes.runebar then lib.gen_cpbar(self) end
-	end
-
-	if (unit == "targettarget") then
+		lib.gen_cpbar(self)
+		-- plugins
+		lib.gen_debuff_hl(self)
+		lib.gen_altpowerbar(self,'target')
+end
+local function CreateToTStyle(self, unit, isSingle)
+		lib.init(self)
 
 		self.mystyle = "tot"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(120, 27)
+		self:SetSize(106, 24)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,6)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
 
-		--style specific stuff
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1122,27 +1113,28 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-
-	end
-
-	if (unit == "focus") then
-
+end
+local function CreateFocusStyle(self, unit, isSingle)
+		lib.init(self)
 		self.mystyle = "focus"
-		
+
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(122, 27)
+		self:SetSize(106, 24)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,6)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
-		-- castbar
-		lib.gen_castbar(self)
 
-		--style specific stuff
+		-- castbar
+		lib.gen_castbar(self, 'focus')
+
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1152,20 +1144,23 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-	end
-
-	if (unit == "focustarget") then
-
+		-- plugins
+		lib.gen_debuff_hl(self)
+end
+local function CreateFocusTargetStyle(self, unit, isSingle)
+		lib.init(self)
 		self.mystyle = "focustarget"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(120, 27)
+		self:SetSize(106, 24)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,6)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
 
@@ -1179,10 +1174,9 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-	end
-
-	if (unit == "pet") then
-
+end
+local function CreatePetStyle(self, unit, isSingle)
+		lib.init(self)
 		self.mystyle = "pet"
 		
 		self.Range = {
@@ -1191,18 +1185,21 @@ local function Shared(self, unit)
 		}
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(122, 27)
+		self:SetSize(106, 24)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,6)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
-		-- castbar
-		lib.gen_castbar(self)
 
-		--style specific stuff
+		-- castbar
+		lib.gen_castbar(self, 'pet')
+
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1212,24 +1209,27 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-	end
-
-	if (unit == "pettarget") then
-
+		-- plugins
+		lib.gen_debuff_hl(self)
+end
+local function CreatePetTargetStyle(self, unit, isSingle)
+		lib.init(self)
 		self.mystyle = "pettarget"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(120, 27)
+		self:SetSize(106, 24)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,6)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
 
-		--style specific stuff
+		-- frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1239,7 +1239,9 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-	end
+end
+local function CreatePartyStyle(self, unit, isSingle)
+	lib.init(self)
 
 	if (unit == "party") then
 
@@ -1252,19 +1254,22 @@ local function Shared(self, unit)
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(180, 40)
+		self:SetSize(180, 42)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self,28)
+		lib.gen_namestring(self, 12, 'player')
+		lib.gen_infostring(self, 12, 'player')
+		lib.gen_powerbar(self,10)
+		self.bd = lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
-		lib.gen_readycheck(self)
+		lib.gen_portrait(self, self:GetWidth()-16, 18, 6)
+		lib.gen_combatfeedback(self)
 		lib.gen_raidmark(self)
 		lib.gen_infoicons(self)
 		lib.gen_lfdicon(self)
-		lib.gen_targetborder(self)
-		lib.gen_threatborder(self)
+		lib.gen_ttborder(self)
+		lib.gen_auras(self)
 
 		--style specific stuff
 		self.Health.frequentUpdates = false
@@ -1272,33 +1277,28 @@ local function Shared(self, unit)
 		self.Power.colorClass = true
 		self.Power.colorDisconnected = true
 		self.Power.bg.multiplier = 0.5
-		self:RegisterEvent('PLAYER_TARGET_CHANGED', lib.ChangedTarget)
-		self:RegisterEvent('PARTY_MEMBERS_CHANGED', lib.ChangedTarget)
-		self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", lib.UpdateThreat)
-		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", lib.UpdateThreat)
 
 		-- plugins
 		lib.gen_debuff_hl(self)
-	end
 
 	-- party target
---	if (self.unit and self.unit:match("party%dtarget")) then
---	if (self:GetAttribute("unitsuffix") == "partyUnitButton%dTarget") then
-	if (self:GetAttribute("unitsuffix") == "target" and self:GetParent():GetName():match("oUF_Califpornia_party")) then
+	elseif (self:GetAttribute("unitsuffix") == "target") then
 		self.mystyle = "partytarget"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(100, 27)
+		self:SetSize(86, 19)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,2)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
 
-		--style specific stuff
+		-- Frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
 		self.Power.colorTapping = true
@@ -1308,188 +1308,287 @@ local function Shared(self, unit)
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-	end
 
+	
 	-- party pet
-	if (self:GetAttribute("unitsuffix") == "pet") then
+	elseif (self:GetAttribute("unitsuffix") == "pet") then
 		self.mystyle = "slim"
 		
 		-- Size and Scale
 		self:SetScale(1)
-		self:SetSize(100, 20)
+		self:SetSize(86, 19)
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,2)
+		self.bd = lib.gen_backdrop(self, 0)
+		lib.gen_highlight(self)
+		lib.gen_raidmark(self)
+		lib.gen_ttborder(self)
+
+		-- Frame specific stuff
+		self.Health.frequentUpdates = false
+		self.Health.colorSmooth = true
+		self.Power.colorReaction = true
+		self.Power.colorHealth = true
+		self.Power.bg.multiplier = 0.5
+		-- plugins
+		lib.gen_debuff_hl(self)
+	end
+end
+
+local function CreateBossStyle(self, unit, isSingle)
+	lib.init(self)
+
+		self.mystyle = "group"
+
+		-- Size and Scale
+		self:SetScale(1)
+		self:SetSize(180, 42)
+
+		-- Generate Bars
+		lib.gen_hpbar(self,28)
+		lib.gen_namestring(self, 12, 'player')
+		lib.gen_infostring(self, 12, 'player')
+		lib.gen_powerbar(self,10)
+		lib.gen_backdrop(self, 0)
+		lib.gen_highlight(self)
+		lib.gen_portrait(self, self:GetWidth()-16, 18, 6)
+		lib.gen_raidmark(self)
+
+		-- Frame specific stuff
+		self.Health.frequentUpdates = false
+		self.Health.colorSmooth = true
+		self.Power.colorReaction = true
+		self.Power.bg.multiplier = 0.5
+
+end
+local function CreateArenaStyle(self, unit, isSingle)
+	lib.init(self)
+	if (unit and unit:find("arena%d")) then
+
+		self.mystyle = "group"
+
+		-- Size and Scale
+		self:SetScale(1)
+		self:SetSize(180, 42)
+
+		-- Generate Bars
+		lib.gen_hpbar(self,28)
+		lib.gen_namestring(self, 12, 'player')
+		lib.gen_infostring(self, 12, 'player')
+		lib.gen_powerbar(self,10)
+		lib.gen_backdrop(self, 0)
+		lib.gen_highlight(self)
+		lib.gen_portrait(self, self:GetWidth()-16, 18, 6)
+		lib.gen_combatfeedback(self)
+		lib.gen_raidmark(self)
+
+		-- Frame specific stuff
+		self.Health.frequentUpdates = false
+		self.Health.colorSmooth = true
+		self.Power.colorDisconnected = true
+		self.Power.colorClass = true
+		self.Power.bg.multiplier = 0.5
+
+	-- arena target
+	elseif (unit and unit:find("arena%dtarget")) then
+		
+		-- Size and Scale
+		self:SetScale(1)
+		self:SetSize(86, 19)
+
+		-- Generate Bars
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,2)
+		lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
 		lib.gen_raidmark(self)
 
-		--style specific stuff
+		-- Frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
-		self.Power.colorTapping = true
 		self.Power.colorDisconnected = true
-		self.Power.colorHappiness = false
 		self.Power.colorClass = true
 		self.Power.colorReaction = true
 		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
+
+	-- arena pet
+	elseif (unit and unit:find("arena%dtarget")) then
+
+		-- Size and Scale
+		self:SetScale(1)
+		self:SetSize(86, 19)
+
+		-- Generate Bars
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'tot')
+		lib.gen_infostring(self, 12, 'tot')
+		lib.gen_powerbar(self,2)
+		lib.gen_backdrop(self, 0)
+		lib.gen_highlight(self)
+		lib.gen_raidmark(self)
+
+		-- Frame specific stuff
+		self.Health.frequentUpdates = false
+		self.Health.colorSmooth = true
+		self.Power.colorDisconnected = true
+		self.Power.colorReaction = true
+		self.Power.colorHealth = true
+		self.Power.bg.multiplier = 0.5
 	end
+end
 
+local function CreateRaidStyleDPS(self, unit, isSingle)
+		lib.init(self)
+		self:SetScale(1)
+		self:SetSize(106, 20)
 
-	if (unit == "raid") then
-
-		self.mystyle = "raid"
-		
 		self.Range = {
 			insideAlpha = 1,
 			outsideAlpha = .5,
 		}
 
 		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
-		lib.gen_powerbar(self)
+		lib.gen_hpbar(self, 16)
+		lib.gen_namestring(self, 12, 'raid')
+		lib.gen_infostring(self, 12, 'raid')
+		lib.gen_powerbar(self,3)
+		self.bd = lib.gen_backdrop(self, 0)
 		lib.gen_highlight(self)
-		lib.gen_readycheck(self)
 		lib.gen_raidmark(self)
+		lib.gen_ttborder(self)
+		lib.gen_auras(self,'raid')
+		lib.gen_lfdicon(self,true)
 		lib.gen_infoicons(self)
-		lib.gen_lfdicon(self)
 
-		--style specific stuff
+		-- Frame specific stuff
 		self.Health.frequentUpdates = false
 		self.Health.colorSmooth = true
-		self.Power.colorTapping = true
 		self.Power.colorDisconnected = true
-		self.Power.colorHappiness = false
 		self.Power.colorClass = true
 		self.Power.colorReaction = true
-		self.Power.colorHealth = true
 		self.Power.bg.multiplier = 0.5
-		lib.gen_targetborder(self)
-		lib.gen_threatborder(self)
-		self:RegisterEvent('PLAYER_TARGET_CHANGED', lib.ChangedTarget)
-		self:RegisterEvent('RAID_ROSTER_UPDATE', lib.ChangedTarget)
-		self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", lib.UpdateThreat)
-		self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", lib.UpdateThreat)
 		-- plugins
 		lib.gen_debuff_hl(self)
-		lib.gen_raiddebuffs(self)
-	end
-
-	if (unit and unit:find("boss%d")) then
-
-		self.mystyle = "group"
-
-		-- Size and Scale
-		self:SetScale(1)
-		self:SetSize(180, 24)
-
-		-- Generate Bars
-		lib.gen_hpbar(self)
-		lib.gen_hpstrings(self)
---		lib.gen_powerbar(self)
-		lib.gen_highlight(self)
-		lib.gen_raidmark(self)
-
-		--style specific stuff
-		self.Health.frequentUpdates = false
-		self.Health.colorSmooth = true
---[[		self.Power.colorSmooth = true
-		self.Power.colorTapping = true
-		self.Power.colorDisconnected = true
-		self.Power.colorHappiness = false
-		self.Power.colorClass = true
-		self.Power.colorReaction = true
-		self.Power.colorHealth = true]]
-
-
-		-- temp
-		self.h:SetPoint("BOTTOMRIGHT", 5, -5)
-
-	end
-
-	return self
 end
-oUF:RegisterStyle('Califpornia', Shared)
 
 
+oUF:RegisterStyle("Player", CreatePlayerStyle)
+oUF:RegisterStyle("Target", CreateTargetStyle)
+oUF:RegisterStyle("ToT", CreateToTStyle)
+oUF:RegisterStyle("Focus", CreateFocusStyle)
+oUF:RegisterStyle("FocusTarget", CreateFocusTargetStyle)
+oUF:RegisterStyle("Pet", CreatePetStyle)
+oUF:RegisterStyle("PetTarget", CreatePetTargetStyle)
+oUF:RegisterStyle("Boss", CreateBossStyle)
+oUF:RegisterStyle("Party", CreatePartyStyle)
+oUF:RegisterStyle("Arena", CreateArenaStyle)
+
+oUF:RegisterStyle("RaidDPS", CreateRaidStyleDPS)
+--oUF:RegisterStyle("oUF_MT", CreateMTStyle)
 
 ------------------------------------------------------------------------
 -- SPAWNS
 ------------------------------------------------------------------------
--- player
-local player = oUF:Spawn('player', "oUF_Califpornia_player")
-player:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 10, -10)
-
--- target
-local target = oUF:Spawn('target', "oUF_Califpornia_target")
-target:SetPoint("TOPLEFT", player, "TOPRIGHT", 8, 0)
-
--- target of target
-local tot = oUF:Spawn('targettarget', "oUF_Califpornia_targettarget")
-tot:SetPoint("TOPLEFT", target, "TOPRIGHT", 8, 0)
-
--- focus
-local focus = oUF:Spawn('focus', "oUF_Califpornia_focus")
-focus:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -8)
-
--- focus target
-local focustarget = oUF:Spawn('focustarget', "oUF_Califpornia_focustarget")
-focustarget:SetPoint("TOPLEFT", focus, "TOPRIGHT", 8, 0)
-
--- pet
-local pet = oUF:Spawn('pet', "oUF_Califpornia_pet")
-pet:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -43)
-
--- focus target
-local pettarget = oUF:Spawn('pettarget', "oUF_Califpornia_pettarget")
-pettarget:SetPoint("TOPLEFT", pet, "TOPRIGHT", 8, 0)
-
-
--- A small helper to change the style into a unit specific, if it exists.
-local spawnHelper = function(self, unit, ...)
-		self:SetActiveStyle'Califpornia'
-		local object = self:Spawn(unit)
-		object:SetPoint(...)
-		return object
-end
 
 oUF:Factory(function(self)
+
+	self:SetActiveStyle("Player")
+	local player = self:Spawn("player", "oUF_Player")
+	player:SetPoint("TOPLEFT", UIParent, "TOPLEFT", Califpornia.CFG.common.screen_spacer, -Califpornia.CFG.common.screen_spacer)
+
+	self:SetActiveStyle("Target")
+	local target = self:Spawn("Target", "oUF_Target")
+	target:SetPoint("TOPLEFT", player, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("ToT")
+	local targettarget = self:Spawn("targettarget", "oUF_tot")
+	targettarget:SetPoint("TOPLEFT", target, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("Pet")
+	local pet = self:Spawn("pet", "oUF_pet")
+	pet:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -43)
+
+	self:SetActiveStyle("PetTarget")
+	local pettarget = self:Spawn("pettarget", "oUF_pettarget")
+	pettarget:SetPoint("TOPLEFT", pet, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("Focus")
+	local focus = self:Spawn("focus", "oUF_focus")
+	focus:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -8)
+
+	self:SetActiveStyle("FocusTarget")
+	local focustarget = self:Spawn("focustarget", "oUF_focustarget")
+	focustarget:SetPoint("TOPLEFT", focus, "TOPRIGHT", 8, 0)
+
+	-- PARTY
+	self:SetActiveStyle("Party")
+	local party = self:SpawnHeader('oUF_Party', nil, 'party',
+		'showParty', true,
+		'showSolo', false,
+		'showPlayer', false,
+		'showRaid', false,
+		'yOffset', -50,
+		'xOffset', 0,
+		'maxColumns', 1,
+		'unitsPerColumn', 4,
+		'columnAnchorPoint', 'TOPLEFT',
+		'template', 'oUF_cParty',
+		'oUF-initialConfigFunction', [[
+			self:SetWidth(180)
+			self:SetHeight(40)
+		]]
+	)
+	party:SetPoint("TOPLEFT", UIParent, "TOPLEFT", Califpornia.CFG.common.screen_spacer, -150)
+
+	oUF:SetActiveStyle("Arena")
+	local arena = {}
+	local arenatarget = {}
+	local arenapet = {}
+	for i = 1, 5 do
+		arena[i] = self:Spawn("arena"..i, "oUF_Arena"..i)
+		arenatarget[i] = self:Spawn("arena"..i.."target", "oUF_Arena"..i.."target"):SetPoint("TOPLEFT",arena[i], "BOTTOMLEFT", 0, -6)
+		arenapet[i] = self:Spawn("arena"..i.."pet", "oUF_Arena"..i.."pet"):SetPoint("TOPRIGHT",arena[i], "BOTTOMRIGHT", 0, -6)
+		if i == 1 then
+			arena[i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -Califpornia.CFG.common.screen_spacer, -150)
+		else
+			arena[i]:SetPoint("TOP", arena[i-1], "BOTTOM", 0, -50)
+		end
+	end
+
+	oUF:SetActiveStyle("Boss")
+	local boss = {}
+	for i = 1, MAX_BOSS_FRAMES do
+		boss[i] = self:Spawn("boss"..i, "oUF_Califpornia_Boss"..i)
+		if i == 1 then
+			boss[i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -Califpornia.CFG.common.screen_spacer, -150)
+		else
+			boss[i]:SetPoint('TOP', boss[i-1], 'BOTTOM', 0, -50)
+		end
+	end
+
 	-- RAID
 	CompactRaidFrameContainer:Hide()
-	if CalifporniaCFG.unitframes.showraidmanager ~= true then
+	if Califpornia.CFG.unitframes.showraidmanager ~= true then
 		CompactRaidFrameManager:SetAlpha(0)
 	end
 
-	local maxGroups = 8
+	local maxGroups = 5
+	if Califpornia.CFG.unitframes.allgroups then
+		maxGroups = 8
+	end
+	local raid_groups = {}
 
-	local fheight = 28
-	local fwidth = 100
 
-	local raid_groups = {};
-	local cur_y;
-	local cur_x;
-
-	if CalifporniaCFG.unitframes.alt_layout then
-		-- Ennie's raid frame layout, separate group frames
-		local party = self:SpawnHeader('oUF_Califpornia_party', nil, 'party',
-			'showParty', true,
---		'showPlayer', true,
-			'yOffset', -40,
-			'xOffset', 0,
-			'maxColumns', 1,
---		'unitsPerColumn', 5,
-			'unitsPerColumn', 4,
-			'columnAnchorPoint', 'TOPLEFT',
-			'template', 'oUF_cParty',
-			'oUF-initialConfigFunction', [[
-				self:SetWidth(180)
-				self:SetHeight(40)
-			]]
-		)
-		party:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -130)
+	if Califpornia.CFG.unitframes.dps_layout then
+		oUF:SetActiveStyle("RaidDPS")
+		-- DPS raid layot, very minimalistic. 
 		for i = 1, maxGroups do
 			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaRaid"..i, nil, "raid", 
 				"showRaid", true,  
@@ -1502,78 +1601,24 @@ oUF:Factory(function(self)
 				"groupBy", "GROUP",
 				"groupingOrder", "1,2,3,4,5,6,7,8",
 				"sortMethod", "INDEX",
-				"maxColumns", maxGroups,
+				"maxColumns", 1,
 				"unitsPerColumn", 5,
 				"columnSpacing", 7,
 				"point", "TOP",
-				"columnAnchorPoint", "LEFT",
-				"oUF-initialConfigFunction", ([[
-				self:SetWidth(%d)
-				self:SetHeight(%d)
-				]]):format(100, 18))
+				"columnAnchorPoint", "LEFT")
 			raid_groups[i]:SetScale(1)
-			--[[ -_- ]]--
 			if i == 1 then 
-				raid_groups[i]:SetPoint("TOPLEFT", oUF_Califpornia_player, "BOTTOMLEFT", 0, -100)
---			elseif i == 4 or i == 7 then
-			elseif i == 6 then
+				raid_groups[i]:SetPoint("TOPLEFT", UIParent, Califpornia.CFG.common.screen_spacer, -150)
+			elseif i == 6 and Califpornia.CFG.unitframes.allgroups then
 				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[1], "TOPRIGHT", 9, 0)
 			else
 				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[i-1], "BOTTOMLEFT", 0, -15)
 			end
 		end
 	else
-	-- GRID-like raid frame layout
-		for i = 1, maxGroups do
-			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaGrid"..i, nil, "solo,party,raid", 
-				"showRaid", true,  
-				"showPlayer", true,
-				"showSolo", true,
-				"showParty", true,
-				"xoffset", 5,
-				"yOffset", -7,
-				"groupFilter", i,
-				"groupBy", "GROUP",
-				"groupingOrder", "1,2,3,4,5,6,7,8",
-				"sortMethod", "INDEX",
-				"maxColumns", maxGroups,
-				"unitsPerColumn", 5,
-				"columnSpacing", 7,
-				"point", "LEFT",
-				"columnAnchorPoint", "TOP",
-				"oUF-initialConfigFunction", ([[
-				self:SetWidth(%d)
-				self:SetHeight(%d)
-				]]):format(fwidth, fheight))
-			raid_groups[i]:SetScale(1)
-			if i == 1 then 
-				raid_groups[i]:SetPoint("TOP", 'UIParent', "BOTTOM", 0, 440)
-			else
-				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[i-1], "BOTTOMLEFT", 0, -5)
-			end
-		end
 	end
 
-	local boss = {}
-	for i = 1, MAX_BOSS_FRAMES do
-		boss[i] = oUF:Spawn("boss"..i, "oUF_Califpornia_Boss"..i)
-		if i == 1 then
-			boss[i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -10, -250)
-		else
-			boss[i]:SetPoint('TOP', boss[i-1], 'BOTTOM', 0, -10)		 
-		end
-	end
-	for i, v in ipairs(boss) do v:Show() end
 end)
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1611,5 +1656,33 @@ do
 	UnitPopupMenus["FOCUS"] = { "RAID_TARGET_ICON", "CANCEL" }
 	UnitPopupMenus["BOSS"] = { "RAID_TARGET_ICON", "CANCEL" }
 end
+
+
+	-- GRID-like raid frame layout
+		for i = 1, maxGroups do
+			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaGrid"..i, nil, "solo,party,raid", 
+				"showRaid", true,  
+				"showPlayer", true,
+				"showSolo", true,
+				"showParty", true,
+				"xoffset", 5,
+				"yOffset", -7,
+				"groupFilter", i,
+				"groupBy", "GROUP",
+				"groupingOrder", "1,2,3,4,5,6,7,8",
+				"sortMethod", "INDEX",
+				"maxColumns", maxGroups,
+				"unitsPerColumn", 5,
+				"columnSpacing", 7,
+				"point", "LEFT",
+				"columnAnchorPoint", "TOP")
+			raid_groups[i]:SetScale(1)
+			if i == 1 then 
+				raid_groups[i]:SetPoint("TOP", 'UIParent', "BOTTOM", 0, 440)
+			else
+				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[i-1], "BOTTOMLEFT", 0, -5)
+			end
+		end
+
 ]]--
 

@@ -1,44 +1,47 @@
 if not Califpornia.CFG.buffs.enable then return end
-local rowbuffs = 16
-
-
-local Group = CalifporniaCFG.BF:Group('CalifporniaUI', 'BuffBar')
-Group:Skin('DsmFade', true, false, {})
-
 
 local cache = {}
+
+local function lSetTimeText(button, time)
+	if( time <= 0 ) then
+		button:SetText("");
+	elseif( time < 3600 ) then
+		local d, h, m, s = ChatFrame_TimeBreakDown(time);
+		button:SetFormattedText("%02d:%02d", m, s);
+	else
+		local d, h, m, s = ChatFrame_TimeBreakDown(time);
+		button:SetFormattedText("%02d:%02d", h, m);
+	end
+end
 
 local function BFSkinButton(button)
 	if button and not cache[button] then
 		button:SetHeight(Califpornia.CFG.buffs.iconsize)
 		button:SetWidth(Califpornia.CFG.buffs.iconsize)
-		Group:AddButton(button)
+		Califpornia.SkinButton(button, false, false)
 
 		local btime = _G[button:GetName().."Duration"]
---		local btime = _G[button:GetName().."Duration"]
 		if btime then
 			btime:SetFont(unpack(Califpornia.CFG.buffs.font))
+			btime:SetVertexColor(unpack(Califpornia.CFG.buffs.time_color))
+			btime:SetJustifyH('CENTER')
+			btime:ClearAllPoints()
+			btime:SetPoint("CENTER", button, 1, 0)
+		end
+		local bcount = _G[button:GetName().."Count"]
+		if bcount then
+			bcount:SetFont(unpack(Califpornia.CFG.buffs.font))
+			bcount:SetVertexColor(unpack(Califpornia.CFG.buffs.count_color))
+			bcount:SetJustifyH('RIGHT')
+			bcount:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -3, 0)
 		end
 		cache[button] = true
-
-
---[[	button.time = lib.gen_fontstring(button, mfont, 12, "OUTLINE")
-	button.time:SetPoint("CENTER", button, 2, 0)
-	button.time:SetJustifyH('CENTER')
-	button.time:SetVertexColor(1,1,1)
-
-	button.count = lib.gen_fontstring(button, mfont, 10, "OUTLINE")
-	button.count:ClearAllPoints()
-	button.count:SetPoint("BOTTOMRIGHT", button, 7, -5)
-	button.count:SetVertexColor(1,1,1)	]]
-
-
 	end
 end
 
 TemporaryEnchantFrame:ClearAllPoints()
 TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, -8, -8)
-TemporaryEnchantFrame.SetPoint = CalifporniaCFG.dummy
+TemporaryEnchantFrame.SetPoint = Califpornia.dummy
 
 TempEnchant1:ClearAllPoints()
 TempEnchant2:ClearAllPoints()
@@ -47,21 +50,6 @@ TempEnchant2:SetPoint("RIGHT", TempEnchant1, "LEFT", -4, 0)
 
 for i = 1, 3 do
 	BFSkinButton(_G["TempEnchant"..i])
---[[	local f = CreateFrame("Frame", nil, _G["TempEnchant"..i])
-	f:SetFrameLevel(1)
-	f:SetHeight(30)
-	f:SetWidth(30)
-	f:SetFrameStrata("BACKGROUND")
-	f:SetPoint("CENTER", _G["TempEnchant"..i], "CENTER", 0, 0)
-	_G["TempEnchant"..i.."Border"]:Hide()
-	_G["TempEnchant"..i.."Icon"]:SetTexCoord(.08, .92, .08, .92)
-	_G["TempEnchant"..i.."Icon"]:SetPoint("TOPLEFT", _G["TempEnchant"..i], 2, -2)
-	_G["TempEnchant"..i.."Icon"]:SetPoint("BOTTOMRIGHT", _G["TempEnchant"..i], -2, 2)
-	_G["TempEnchant"..i]:SetHeight(30)
-	_G["TempEnchant"..i]:SetWidth(30)	
-	_G["TempEnchant"..i.."Duration"]:ClearAllPoints()
-	_G["TempEnchant"..i.."Duration"]:SetPoint("BOTTOM", 0, 13)
-	_G["TempEnchant"..i.."Duration"]:SetFont(CalifporniaCFG.media.font, 12)]]
 end
 
 
@@ -113,6 +101,15 @@ local function UpdateBuffAnchors()
 
 end
 
+local function UpdateBuffsDuration(buffButton, timeLeft)
+	local duration = getglobal(buffButton:GetName().."Duration");
+	if( timeLeft ) then
+		lSetTimeText(duration, timeLeft);
+		duration:Show();
+	else
+		duration:Hide();
+	end
+end
 
 
 
@@ -123,3 +120,5 @@ f:RegisterEvent("PLAYER_EVENTERING_WORLD")
 
 hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", UpdateBuffAnchors)
 hooksecurefunc("DebuffButton_UpdateAnchors", UpdateDebuffAnchors)
+hooksecurefunc("AuraButton_UpdateDuration", UpdateBuffsDuration)
+

@@ -15,7 +15,7 @@ localSlots = {
 	[11] = {18, "Ranged", 1000}
 }
 	
-if CalifporniaCFG["datatext"].dur and CalifporniaCFG["datatext"].dur > 0 then
+if CalifporniaCFG["datatext"].dur and Califpornia.CFG["datatext"].dur > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("BACKGROUND")
@@ -39,7 +39,18 @@ if CalifporniaCFG["datatext"].dur and CalifporniaCFG["datatext"].dur > 0 then
 		table.sort(localSlots, function(a, b) return a[3] < b[3] end)
 		
 		if Total > 0 then
-			Text:SetText("|cFF00A2FF"..floor(localSlots[1][3]*100).."%")
+			local totalpercent = floor(localSlots[1][3]*100)
+			if totalpercent <= 30 then
+				duracolor = "|cffD80909"
+			elseif totalpercent <= 70 then
+				duracolor = "|cffE8DA0F"
+			elseif totalpercent == 100 then
+				duracolor = "|cFF00A2FF"
+			else
+				duracolor = "|cff0CD809"
+			end
+
+			Text:SetText(duracolor..totalpercent.."%")
 		else
 			Text:SetText("|cFF00A2FF"..": 100%")
 		end

@@ -1,17 +1,5 @@
 if not CalifporniaCFG["unitframes"].enable == true then return end
 
-local SVal = function(val)
-	if val then
-		if (val >= 1e6) then
-			return ("%.1fm"):format(val / 1e6)
-		elseif (val >= 1e3) then
-			return ("%.1fk"):format(val / 1e3)
-		else
-			return ("%d"):format(val)
-		end
-	end
-end
-
 local function hex(r, g, b)
 	if r then
 		if (type(r) == 'table') then

@@ -103,4 +103,20 @@ CalifporniaCFG.util.CreatePanel = function(f, w, h, a1, p, a2, x, y)
 	CalifporniaCFG.util.innerBorder(f)
 end
 
+-- CreatePanel
+Califpornia.StylePanel = function(f)
+	local r, g, b =CalifporniaCFG.colors.class_color.r, CalifporniaCFG.colors.class_color.g, CalifporniaCFG.colors.class_color.b
+	f:SetBackdrop({
+	  bgFile =  [=[Interface\ChatFrame\ChatFrameBackground]=],
+      edgeFile = "Interface\\Buttons\\WHITE8x8", 
+	  tile = false, tileSize = 0, edgeSize = 1, 
+	  insets = { left = -1, right = -1, top = -1, bottom = -1}
+	})
+	f:SetBackdropColor(unpack(CalifporniaCFG.colors.class_backdrop))
+	f:SetBackdropBorderColor(unpack(CalifporniaCFG.colors.class_backdrop_border))
+	
+	CalifporniaCFG.util.outerBorder(f)
+	CalifporniaCFG.util.innerBorder(f)
+end
+
 Califpornia.Lib = CalifporniaCFG.util

@@ -19,7 +19,7 @@ Califpornia.incombat = UnitAffectingCombat("player")
 -- AddOn and Client info
 Califpornia.Version = GetAddOnMetadata("CalifporniaUI", "Version")
 Califpornia.patch = GetBuildInfo()
-Califpornia.resolution = GetCurrentResolution()
+Califpornia.res_x, Califpornia.res_y = strsplit("x", ({GetScreenResolutions()})[GetCurrentResolution()])
 Califpornia.locale = GetLocale()
 
 -- Class colors
@@ -34,29 +34,6 @@ local color = Califpornia.colors.class_colors[color_class]
 Califpornia.colors.m_color = color
 Califpornia.colors.m_backdrop = {color.r/10, color.g/10, color.b/10, 0.7}
 Califpornia.colors.m_border = {color.r/3, color.g/3, color.b/3, 0.9}
-
-
--- Misc functions
-
-Califpornia.dummy = function() return end
-
-Califpornia.kill = function(object)
-	local objectReference = object
-	if type(object) == "string" then
-		objectReference = _G[object]
-	else
-		objectReference = object
-	end
-	if not objectReference then return end
-	if type(objectReference) == "frame" then
-		objectReference:UnregisterAllEvents()
-	end
-	objectReference.Show = Califpornia.dummy
-	objectReference:Hide()
-end
-
---print ('CalifporniaUI: resolution is '..Califpornia.resolution)
-
 
 
 --OLD STUFF

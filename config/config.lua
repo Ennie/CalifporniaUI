@@ -54,7 +54,7 @@ CalifporniaCFG["nameplate"] = {
 -- Minimap
 CalifporniaCFG["minimap"] = {
 	["enable"]					 = true,
-	["font"]						 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], 12, "OUTLINE"},
+	["font"]						 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
 }
 
 -- Skin some random ui elements
@@ -79,7 +79,7 @@ CalifporniaCFG["map"] = {
 }
 CalifporniaCFG["chat"] = {
 	["enable"]				 = true,
-	["tabfont"]				 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], 12, "OUTLINE"},
+	["tabfont"]				 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
 	["editboxfont"]				 = {[[Interface\AddOns\CalifporniaUI\media\fonts\normal_font.ttf]], 10, "NORMAL"},
 	["whispersound"] = true,				 -- play a sound when receiving whisper
 	["filtersysmsg"] = true,				 -- Your share of loot: x (y deposited to guildbank) => +x (y)
@@ -106,9 +106,9 @@ CalifporniaCFG["mirror"] = {
 }
 CalifporniaCFG["panels"] = {
 	["enable"]				 = true,                     -- dont disable :<
-	["font"]					 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], 12, "OUTLINE"},
+	["font"]					 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
 	["block_width"]			 = 340,	-- Overall panel block width. applies both to left and right blocks. For right block it will be splitted for minimap and dps/omen panels. minimap always will be square with one side == block_height
-	["block_height"]			 = 110,	-- Big panel height. applies both to left and right blocks.
+	["block_height"]			 = 120,	-- Big panel height. applies both to left and right blocks.
 	["mini_height"]			 = 15,	-- Slim info panel height. 
 	["spacer"]				 = 3,		-- Panel spacing
 	["threatbar"]				 = true,                     -- blah
@@ -122,21 +122,19 @@ CalifporniaCFG["datatext"] = {
 	["guild"] = 3,                -- show number on guildmate connected on panels
 	["friends"] = 2,                -- show number of friends connected.
 	["bags"] = 4,                -- show space used in bags on panels
+	["speed"] = 7,
+	["stats"] = 8,
+	["currency"] = 9,
+	["classcolor"] = true,
 }
 
-CalifporniaCFG["buffs"] = {
+Califpornia.CFG["buffs"] = {
 	["enable"] = true,  
-	["font"]					 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], 12, "OUTLINE"},
-	["iconsize"] = 32, -- Buffs and debuffs size
+	["font"]					 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 11, "OUTLINE"},
+	["time_color"]				 = {1,1,1},
+	["count_color"]				 = {1,1,1},
+	["iconsize"] = 36, -- Buffs and debuffs size
 	["rowbuffs"] = 16,
-	["rowdebuffs"] = 16,
-	["timefontsize"] = 11, -- Time font size
-	["countfontsize"] = 15,  -- Count font size
-	["spacing"] = 2, -- Spacing between icons
-	["timeYoffset"] = -3, -- Verticall offset value for time text field
-	["BUFFS_PER_ROW"] = 10,
-	["BUFFpos"] = { "TOPRIGHT","UIParent", -10, -10 },
-	["DEBUFFpos"] = { "BOTTOMLEFT","oUF_drkPlayer", -2, -14 },
 }
 
 
@@ -144,9 +142,10 @@ CalifporniaCFG["buffs"] = {
 CalifporniaCFG["unitframes"] = {
 	-- general options
 	["enable"] = true,                     -- do i really need to explain this?
-	["alt_layout"]				= true,			-- use alternative raid/party layout (false == grid-like layout)
+	["dps_layout"]				= true,			-- use alternative raid/party layout (false == grid-like layout)
 	["showraidmanager"]		= false,			-- show default blizzard raid manager (for ground marks)
 	["iconsize"]				= 20,
+	["classbar"]				= true,
 
 
 	-- class specific elements
@@ -154,11 +153,12 @@ CalifporniaCFG["unitframes"] = {
 	["runebar"]	 = true,                     -- DK runes at player frame
 	["druidmana"]	 = true,                     -- druid mana bar in bear/cat form at player frame
 	["eclipsebar"]	 = true,                     -- druid moonkin eclipse bar at player frame
-	["holypower"]	 = true,                     -- paladin holy power bar at player frame
+	["holypower"]	 = false,                     -- paladin holy power bar at player frame
 	["soulshards"]	 = true,                     -- warlock soul shard bar at player frame
 	["totembar"]	 = true,                     -- shaman totem indicators at player frame
 	-- cast bars
 	["unitcastbar"] = true,                -- enable tukui castbar
+	["cbfont"]				= {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
 	["cblatency"] = false,                 -- enable castbar latency
 	["cbicons"] = true,                    -- enable icons on castbar
 	
@@ -170,126 +170,15 @@ CalifporniaCFG["unitframes"] = {
 
 
 CalifporniaCFG["actionbars"] = {
-	enable 		= true,
-	bar1 = {
-		buttonsize		= 48,
-		buttonspacing	 	= 0,
-		fontsize			= 18,
-		gloss			= true,
-		backdrop			= true,
-		barscale			= 1,
-		uselayout2x6		= false,
-		userplaced		= false, --want to place the bar somewhere else?
-		locked			= true, --frame locked
-		pos				 = { a1 = "BOTTOM", a2 = "BOTTOM", af = "UIParent", x = 0, y = 36	 }, 
-		testmode			= false,
-	},
-	bar2 = {
-		buttonsize		= 24,
-		buttonspacing		= 0,
-		fontsize			= 8,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		uselayout2x6		= false,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "BOTTOMLEFT", a2 = "TOPLEFT", af = "CalifporniaUI_MainMenuBar", x = 1, y = 0 }, 
-		testmode				= false,
-	},
-	bar3 = {
-		buttonsize			= 24,
-		buttonspacing	 = 0,
-		fontsize			= 8,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		uselayout2x6		= false,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "BOTTOMRIGHT", a2 = "TOPRIGHT", af = "CalifporniaUI_MainMenuBar", x = 0, y = 0 }, 
-		testmode				= false,
-	},
-	bar4 = {
-		buttonsize			= 24,
-		buttonspacing	 = 0,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "TOPRIGHT", a2 = "BOTTOMRIGHT", af = "CalifporniaUI_MainMenuBar", x = 0, y = 0 }, 
-		testmode				= false,
-		disable				 = false,
-	},
-	bar5 = {
-		buttonsize			= 24,
-		buttonspacing	 = 0,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "TOPLEFT", a2 = "BOTTOMLEFT", af = "CalifporniaUI_MainMenuBar", x = 1, y = 0 }, 
-		testmode				= false,
-		disable				 = false,
-	},
-	stancebar = {
-		buttonsize			= 24,
-		buttonspacing	 = 0,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "BOTTOMLEFT", a2 = "TOPLEFT", af = "CalifporniaUI_MainMenuBar", x = 0, y = 29}, 
-		testmode				= false,
-		disable				 = false,
-	},
-	petbar = {
-		buttonsize			= 24,
-		buttonspacing	 = 0,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		showonmouseover = false,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= false, --frame locked
-		pos						 = { a1 = "BOTTOMRIGHT", a2 = "TOPRIGHT", af = "CalifporniaUI_MainMenuBar", x = 0, y = 29}, 
-		testmode				= false,
-		disable				 = false,
-	},
-	totembar = {
-		buttonsize			= 24,
-		buttonspacing	 = 1,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= true, --frame locked
-		pos						 = { a1 = "BOTTOMLEFT", a2 = "TOPLEFT", af = "CalifporniaUI_MainMenuBar", x = 0, y = 29}, 
-		testmode				= false,
-		disable				 = false,
-	},
-	vehicleexit = {
-		buttonsize			= 36,
-		fontsize			= 10,
-		gloss			= false,
-		backdrop			= false,
-		barscale				= 1,
-		userplaced			= false, --want to place the bar somewhere else?
-		locked					= false, --frame locked
-		pos						 = { a1 = "BOTTOMLEFT", a2 = "TOPLEFT", af = "CalifporniaUI_MainMenuBar", x = 300, y = 29}, 
-		testmode				= false,
-	},
+	enable 		= false,
+
+	["btn_spacing"]		= 0,
+	["big_button"]			= 48,
+	["small_button"]		= 24,
+
+	["big_font"]			= {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 24, "OUTLINE"},
+	["big_macro"]			= true,
+	["big_macro_font"]		= {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
+	["small_font"]			= {[[Fonts\ARIALN.ttf]], 10, "OUTLINE"},
+	["small_macro"]		= false,
 }

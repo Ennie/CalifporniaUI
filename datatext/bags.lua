@@ -2,13 +2,13 @@
  -- BAGS
 --------------------------------------------------------------------
 
-if CalifporniaCFG["datatext"].bags and CalifporniaCFG["datatext"].bags > 0 then
+if CalifporniaCFG["datatext"].bags and Califpornia.CFG["datatext"].bags > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:EnableMouse(true)
 	Stat:SetFrameStrata("BACKGROUND")
 	Stat:SetFrameLevel(3)
 
-	local Text  =Califpornia.Panels.CreateDataText(CalifporniaCFG["datatext"].bags)
+	local Text  =Califpornia.Panels.CreateDataText(Califpornia.CFG["datatext"].bags)
 
 	local function OnEvent(self, event, ...)
 		local free, total, used = 0, 0, 0

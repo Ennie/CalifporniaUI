@@ -2,14 +2,14 @@ CalifporniaCFG["media"] = {
 	-- fonts (ENGLISH, FRENCH, DEUTCH, SPANISH)
 	["font"] = [[Interface\AddOns\CalifporniaUI\media\fonts\normal_font.ttf]], -- general font of tukui
 --	["uffont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- general font of unitframes
-	["uffont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], -- general font of unitframes
+	["uffont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], -- general font of unitframes
 	["bfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- general font of unitframes
 	["ttfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- tooltipfont
 --	["dtfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- tooltipfont
-	["dtfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], -- tooltipfont
+	["dtfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], -- tooltipfont
 	["dmgfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- general font of dmg / sct
 --	["barfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\magistraltt.ttf]], -- general font of dmg / sct
-	["barfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting_cyr.ttf]], -- general font of dmg / sct
+	["barfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], -- general font of dmg / sct
 	["abfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\normal_font.ttf]], -- action bar font
 	["smallfont"] = [[Interface\AddOns\CalifporniaUI\media\fonts\normal_font.ttf]], -- small font
 	

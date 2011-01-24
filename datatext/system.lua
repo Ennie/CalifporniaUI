@@ -1,4 +1,4 @@
---------------------------------------------------------------------
+﻿--------------------------------------------------------------------
 -- System Stats
 --------------------------------------------------------------------
 function Round(number, decimals)
@@ -6,7 +6,7 @@ function Round(number, decimals)
     return (("%%.%df"):format(decimals)):format(number)
 end
 
-if CalifporniaCFG["datatext"].system and CalifporniaCFG["datatext"].system > 0 then
+if CalifporniaCFG["datatext"].system and Califpornia.CFG["datatext"].system > 0 then
 	local Stat = CreateFrame("Frame")
 	Stat:SetFrameStrata("BACKGROUND")
 	Stat:SetFrameLevel(3)

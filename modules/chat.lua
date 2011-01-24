@@ -65,7 +65,7 @@ local function SetChatInputStyle(id)
 	Califpornia.kill(_G["ChatFrame"..id.."EditBoxFocusMid"])
 	Califpornia.kill(_G["ChatFrame"..id.."EditBoxFocusRight"])
 
-	-- Kill off editbox artwork
+	-- Califpornia.kill off editbox artwork
 	local a, b, c = select(6, _G["ChatFrame"..id.."EditBox"]:GetRegions()); 
 	Califpornia.kill(a);
 	Califpornia.kill(b);
@@ -100,23 +100,23 @@ local function SetChatTabStyle(id)
 	local tab = _G["ChatFrame"..id.."Tab"]
 
 	-- Removes Default ChatFrame Tabs texture				
-	Kill(_G["ChatFrame"..id.."TabLeft"])
-	Kill(_G["ChatFrame"..id.."TabMiddle"])
-	Kill(_G["ChatFrame"..id.."TabRight"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabLeft"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabMiddle"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabRight"])
 
-	Kill(_G["ChatFrame"..id.."TabSelectedLeft"])
-	Kill(_G["ChatFrame"..id.."TabSelectedMiddle"])
-	Kill(_G["ChatFrame"..id.."TabSelectedRight"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedLeft"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedMiddle"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedRight"])
 	
-	Kill(_G["ChatFrame"..id.."TabHighlightLeft"])
-	Kill(_G["ChatFrame"..id.."TabHighlightMiddle"])
-	Kill(_G["ChatFrame"..id.."TabHighlightRight"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabHighlightLeft"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabHighlightMiddle"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabHighlightRight"])
 
-	-- Killing off the new chat tab selected feature
-	Kill(_G["ChatFrame"..id.."TabSelectedLeft"])
-	Kill(_G["ChatFrame"..id.."TabSelectedMiddle"])
-	Kill(_G["ChatFrame"..id.."TabSelectedRight"])
-	Kill(_G["ChatFrame"..id.."TabGlow"])
+	-- Califpornia.killing off the new chat tab selected feature
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedLeft"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedMiddle"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabSelectedRight"])
+	Califpornia.kill(_G["ChatFrame"..id.."TabGlow"])
 	
 	tab.leftSelectedTexture:Hide()
 	tab.middleSelectedTexture:Hide()
@@ -369,18 +369,16 @@ function ChatCopyButtons()
 		local cf = _G[format("ChatFrame%d",  i)]
 
 		local button = CreateFrame("Button", format("ButtonCF%d", i), cf)
-		button:SetPoint("BOTTOMRIGHT", Califpornia.Panels.chat, "TOPRIGHT", 4, 2)
-		button:SetHeight(20)
-		button:SetWidth(20)
+		button:SetPoint("CENTER", Califpornia.Panels.dataleftbtn, "CENTER", 0, 0)
+		button:SetHeight(16)
+		button:SetWidth(16)
 		button:SetAlpha(0.8)
---		SettingsDB.SkinFadedPanel(button)
---		button:SetBackdropBorderColor(SettingsDB.color.r, SettingsDB.color.g, SettingsDB.color.b)
 
 		local buttontexture = button:CreateTexture(nil, "BORDER")
 		buttontexture:SetPoint("CENTER")
 		buttontexture:SetTexture("Interface\\BUTTONS\\UI-GuildButton-PublicNote-Up")
-		buttontexture:SetHeight(16)
-		buttontexture:SetWidth(16)
+		buttontexture:SetHeight(14)
+		buttontexture:SetWidth(14)
 						
 		button:SetScript("OnMouseUp", function(self, btn)
 			if i == 1 and btn == "RightButton" then
