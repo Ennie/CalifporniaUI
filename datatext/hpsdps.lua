@@ -37,7 +37,7 @@
 	function DHPS_FEED:PLAYER_LOGIN()
 		DHPS_FEED:RegisterEvent("PLAYER_REGEN_ENABLED")
 		DHPS_FEED:RegisterEvent("PLAYER_REGEN_DISABLED")
-		DPS_FEED:RegisterEvent("UNIT_PET")
+		DHPS_FEED:RegisterEvent("UNIT_PET")
  
 		player_id = UnitGUID("player")
      

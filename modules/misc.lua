@@ -153,6 +153,19 @@ tAutoAcceptInvite:SetScript("OnEvent", function(self, event, ...)
 				end
 			end
 			
+			local BNtotal = BNGetNumFriends()
+			if BNtotal > 0 then
+				local presenceID, givenName, surname, toonName, toonID, client, isOnline
+				for i = 1, BNtotal do
+					local friendName, toonID = select(4, BNGetFriendInfo(i))
+					if CanCooperateWithToon(toonID) and friendName == leader then
+						AcceptGroup()
+						ingroup = true
+						break
+					end
+				end
+			end
+
 			if not ingroup then
 				for guildIndex = 1, GetNumGuildMembers(true) do
 					local guildMemberName = GetGuildRosterInfo(guildIndex)
@@ -214,7 +227,7 @@ hooksecurefunc("ShowReadyCheck", ShowReadyCheckHook)
 
 
 TicketStatusFrame:ClearAllPoints()
-TicketStatusFrame:SetPoint("BOTTOMRIGHT",UIParent,"BOTTOMRIGHT", -10, 146)
+TicketStatusFrame:SetPoint("BOTTOMRIGHT",UIParent,"BOTTOMRIGHT", -Califpornia.CFG.common.screen_spacer, 124)
 TicketStatusFrame.SetPoint = function() end
 
 local fontName = CalifporniaCFG.media.dmgfont
