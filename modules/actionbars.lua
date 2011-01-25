@@ -103,7 +103,7 @@ local Page = {
 
 local function GetBar()
 	local condition = Page["DEFAULT"]
-	local class = myclass
+	local class = Califpornia.myclass
 	local page = Page[class]
 	if page then
 		condition = condition.." "..page
