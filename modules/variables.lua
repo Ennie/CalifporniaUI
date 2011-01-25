@@ -14,6 +14,7 @@ Califpornia.CFG = {}
 Califpornia.myname = UnitName("player")
 _, Califpornia.myclass = UnitClass("player") 
 Califpornia.mylevel = UnitLevel("player")
+Califpornia.myrealm = GetRealmName()
 Califpornia.incombat = UnitAffectingCombat("player")
 
 -- AddOn and Client info
@@ -33,7 +34,6 @@ Califpornia.colors.class_colors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)
 local color = Califpornia.colors.class_colors[color_class]
 Califpornia.colors.m_color = color
 Califpornia.colors.m_backdrop = {color.r/10, color.g/10, color.b/10, 0.7}
-Califpornia.colors.m_backdrop_noalpha = {color.r/10, color.g/10, color.b/10, 1}
 Califpornia.colors.m_border = {color.r/3, color.g/3, color.b/3, 0.9}
 
 

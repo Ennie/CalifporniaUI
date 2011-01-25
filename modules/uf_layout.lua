@@ -5,6 +5,12 @@ local mfont = Califpornia.CFG.media.uffont
 local playerClass = Califpornia.CFG.myclass
 oUF.colors.smooth = {42/255,48/255,50/255, 42/255,48/255,50/255, 42/255,48/255,50/255}
 oUF.colors.runes = {{0.87, 0.12, 0.23};{0.40, 0.95, 0.20};{0.14, 0.50, 1};{.70, .21, 0.94};}
+oUF.colors.totems = {
+	{ 255/255, 072/255, 000/255 }, -- fire
+	{ 073/255, 230/255, 057/255 }, -- earth
+	{ 069/255, 176/255, 218/255 }, -- water
+	{ 157/255, 091/255, 231/255 }  -- air
+}
 local cpColor = {{0.99, 0.31, 0.31};{0.99, 0.31, 0.31};{0.85, 0.83, 0.35};{0.85, 0.83, 0.35};{0.33, 0.99, 0.33};}
 
 --backdrop table
@@ -224,6 +230,10 @@ lib.gen_namestring = function(f,fs,ftype)
 		name:SetPoint("TOPLEFT", f.Health, "TOPLEFT", 3, -3)
 		f:Tag(name, "[cpuf:afkdnd][cpuf:color][name]")
 		name:SetPoint("RIGHT", f, "RIGHT", -10, 0)
+	elseif ftype == 'grid' then
+		name:SetPoint("TOPLEFT", f.Health, "TOPLEFT", 1, -1)
+		f:Tag(name, "[cpuf:afkdnd][cpuf:color][name]")
+		name:SetPoint("RIGHT", f, "RIGHT", -10, 0)
 	end
 end
 lib.gen_infostring = function(f,fs,ftype)
@@ -242,6 +252,9 @@ lib.gen_infostring = function(f,fs,ftype)
 	elseif ftype == 'raid' then
 		f:Tag(infostr, "[cpuf:raidhp]")
 		infostr:SetPoint("TOPRIGHT", f.Health, "TOPRIGHT", -1, -3)
+	elseif ftype == 'grid' then
+		f:Tag(infostr, "[cpuf:raidhp]")
+		infostr:SetPoint("TOPRIGHT", f.Health, "TOPRIGHT", -1, -1)
 	end
 end
 
@@ -422,6 +435,24 @@ lib.gen_auras = function(f,rtype)
 		Auras.numDebuffs = 5
 		Auras.gap = true
 		Auras:SetPoint("TOPLEFT", f.Health, "TOPRIGHT", 6, 0)
+--		Auras.CustomFilter = debuffFilter
+	elseif rtype == "grid" then
+		if Califpornia.CFG.unitframes.grid_icons == 1 then
+			Auras.size = 12
+			Auras.spacing = 3
+			Auras.numBuffs = 3
+			Auras.numDebuffs = 4
+		else
+			Auras.size = 18
+			Auras.spacing = 2
+			Auras.numBuffs = 1
+			Auras.numDebuffs = 3
+		end
+		Auras:SetHeight(Auras.size)
+		Auras:SetWidth(f.Health:GetWidth()-4)
+		Auras.gap = false
+		Auras:SetPoint("BOTTOMLEFT", f.Health, 1, 0)
+--		Auras.CustomFilter = debuffFilter
 	else
 		Auras.size = f:GetHeight()/2-3
 		Auras:SetHeight(f:GetHeight())
@@ -435,8 +466,21 @@ lib.gen_auras = function(f,rtype)
 	Auras.initialAnchor = "TOPLEFT"
 	Auras["growth-x"] = "RIGHT"		
 	Auras["growth-y"] = "DOWN"
-	Auras.PostCreateIcon = myPostCreateIcon
-	Auras.PostUpdateIcon = myPostUpdateIcon
+	if rtype ~= "grid" then
+		Auras.PostCreateIcon = myPostCreateIcon
+		Auras.PostUpdateIcon = myPostUpdateIcon
+	else
+		Auras.PostCreateIcon = function(self, button)
+			self.showDebuffType = true
+			self.disableCooldown = false
+			button.cd.noOCC = true
+			button.cd.noCooldownCount = true
+			button:EnableMouse(false)
+--			button.icon:SetTexCoord(.07, .93, .07, .93)
+--			button.icon:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0)
+--			button.icon:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", 0, 0)
+		end
+	end
 	f.Auras = Auras
 end
 
@@ -538,7 +582,7 @@ lib.gen_lfdicon = function(f, isRaid)
 	f.LFDRole = f.Power:CreateTexture(nil, 'OVERLAY')
 	f.LFDRole:SetSize(13, 13)
 	if isRaid then
-		f.LFDRole:SetPoint('CENTER', f, 'LEFT', -2, 0)
+		f.LFDRole:SetPoint('CENTER', f.Health, 'LEFT', 0, 0)
 	else
 		f.LFDRole:SetPoint('CENTER', f.Power, 'TOPRIGHT', 2, 0)
 	end
@@ -604,13 +648,44 @@ lib.gen_classbar = function(self)
 		barFrame:SetHeight(4)
 		barFrame:SetWidth(self.Portrait:GetWidth())
 		barFrame:SetFrameLevel(4)
-		self.Portrait:SetHeight(self.Portrait:GetHeight() - 4)
 
 		-- shaman totem bar with backdrops is just ugly
 		if Califpornia.myclass ~= "SHAMAN" then
-			lib.gen_backdrop(barFrame,3)
+			barFrame.bd = lib.gen_backdrop(barFrame,3)
 		end
 
+		-- toggle portrait height for non-permanent class bars (druid mana and eclipse)
+		barFrame:Hide()
+		barFrame:SetScript("OnShow", function(self)
+			local pf = self:GetParent()
+			pf.Portrait:SetHeight(pf.Portrait:GetHeight() - 4)
+		end)
+		barFrame:SetScript("OnHide", function(self)
+			local pf = self:GetParent()
+			pf.Portrait:SetHeight(pf.Portrait:GetHeight() + 4)
+		end)
+		if Califpornia.myclass ~= "DRUID" then
+			barFrame:Show()
+		end
+		-- oh crap, it's because of 2 class plugins :<
+		local barFrame2
+		if Califpornia.myclass == "DRUID" then
+			barFrame2 = CreateFrame("Frame", nil, self)
+			barFrame2:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
+			barFrame2:SetHeight(4)
+			barFrame2:SetWidth(self.Portrait:GetWidth())
+			barFrame2:SetFrameLevel(4)
+			barFrame2.bd = lib.gen_backdrop(barFrame2,3)
+			barFrame2:Hide()
+			barFrame2:SetScript("OnShow", function(self)
+				local pf = self:GetParent()
+				pf.Portrait:SetHeight(pf.Portrait:GetHeight() - 4)
+			end)
+			barFrame2:SetScript("OnHide", function(self)
+				local pf = self:GetParent()
+				pf.Portrait:SetHeight(pf.Portrait:GetHeight() + 4)
+			end)
+		end
 		-- Holy Power
 		if Califpornia.myclass == "PALADIN" then
 			local hpOverride = function(self, event, unit, powerType)
@@ -628,7 +703,6 @@ lib.gen_classbar = function(self)
 					end
 				end
 			end
-			
 			for i = 1, 3 do
 				local holyShard = CreateFrame("StatusBar", self:GetName().."_Holypower"..i, self)
 				holyShard:SetHeight(4)
@@ -677,164 +751,108 @@ lib.gen_classbar = function(self)
 			end
 			self.SoulShards = barFrame
 			self.SoulShards.Override = ssOverride
+		elseif Califpornia.myclass == "DRUID" then
+			-- eclipse
+			local eclipseBarBuff = function(self, unit)
+				if self.hasSolarEclipse then
+					self.eBarBG:SetBackdropBorderColor(1,1,.5,.7)
+				elseif self.hasLunarEclipse then
+					self.eBarBG:SetBackdropBorderColor(.2,.2,1,.7)
+				else
+					self.eBarBG:SetBackdropBorderColor(0,0,0,1)
+				end
+			end
+			
+			barFrame.eBarBG = barFrame.bd
+			
+			local lunarBar = CreateFrame("StatusBar", nil, barFrame)
+			lunarBar:SetPoint("LEFT", barFrame, "LEFT", 0, 0)
+			lunarBar:SetSize(barFrame:GetWidth(), barFrame:GetHeight())
+			lunarBar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+			lunarBar:SetStatusBarColor(0, .1, .7)
+			lunarBar:SetFrameLevel(5)
+			barFrame.LunarBar = lunarBar
+			
+			local solarBar = CreateFrame("StatusBar", nil, barFrame)
+			solarBar:SetPoint("LEFT", lunarBar:GetStatusBarTexture(), "RIGHT", 0, 0)
+			solarBar:SetSize(barFrame:GetWidth(), barFrame:GetHeight())
+			solarBar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+			solarBar:SetStatusBarColor(1,1,.13)
+			solarBar:SetFrameLevel(5)
+			barFrame.SolarBar = solarBar
+			
+			local EBText = lib.gen_fontstring(solarBar, mfont, 10, "OUTLINE")
+			EBText:SetPoint("CENTER", barFrame, "CENTER", 0, 0)
+			self:Tag(EBText, "[pereclipse]")
+			
+			self.EclipseBar = barFrame
+			self.EclipseBar.PostUnitAura = eclipseBarBuff
+
+			-- mana bar
+			local ManaBar = CreateFrame('StatusBar', nil, barFrame2)
+			ManaBar:SetPoint('LEFT', barFrame2, 'LEFT', 0, 0)
+			ManaBar:SetSize(barFrame2:GetWidth(), barFrame2:GetHeight())
+			ManaBar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+			ManaBar:GetStatusBarTexture():SetHorizTile(true)
+			ManaBar:SetFrameLevel(5)
+
+			local MBText = lib.gen_fontstring(ManaBar, mfont, 10, "OUTLINE")
+			MBText:SetPoint('CENTER', ManaBar, 'CENTER', 0, 0)
+			self:Tag(MBText, '[cpuf:druidmana]')
+
+			barFrame2.ManaBar = ManaBar
+			self.DruidMana = barFrame2
+		elseif playerClass == "DEATHKNIGHT" then
+			for i= 1, 6 do
+				local rune = CreateFrame("StatusBar", nil, barFrame)
+				rune:SetSize((barFrame:GetWidth() / 6)-2, 4)
+				rune:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+				rune:SetFrameLevel(4)
+				
+				if (i == 1) then
+					rune:SetPoint("LEFT", barFrame, "LEFT", 1, 0)
+				else
+					rune:SetPoint("TOPLEFT", barFrame[i-1], "TOPRIGHT", 2, 0)
+				end
+				
+				local runeBG = rune:CreateTexture(nil, "BACKGROUND")
+				runeBG:SetAllPoints(rune)
+				runeBG:SetTexture(Califpornia.CFG.media.normTex)
+				rune.bg = runeBG
+				rune.bg.multiplier = 0.3
+				barFrame[i] = rune
+			end
+			self.Runes = barFrame
+		elseif playerClass == "SHAMAN" then
+			barFrame.Destroy = true
+			barFrame.UpdateColors = true
+
+			for i = 1, 4 do
+				local totem = CreateFrame("Frame", nil, barFrame)
+				totem:SetSize((barFrame:GetWidth() / 4)-i+1, 4)
+				if i == 1 then
+					totem:SetPoint("LEFT", barFrame, "LEFT", 0, 0)
+				else
+					totem:SetPoint("LEFT", barFrame[i-1], "RIGHT", 2, 0)
+				end
+				totem:SetFrameLevel(4)
+				lib.gen_backdrop(totem, 3)
+
+				local bar = CreateFrame("StatusBar", nil, totem)
+				bar:SetAllPoints(totem)
+				bar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
+				totem.StatusBar = bar
+
+				totem.bg = totem:CreateTexture(nil, "BACKGROUND")
+				totem.bg:SetAllPoints()
+				totem.bg:SetTexture(Califpornia.CFG.media.normTex)
+				totem.bg.multiplier = 0.3
+
+				barFrame[i] = totem
+			end
+			self.TotemBar = barFrame
 		end
-
 	end
-end
-
-
-
-
--- DRUID MANA
-lib.gen_druidmana = function(self)
-	if playerClass ~= "DRUID" then return end
-
-	local druidManaBar =  CreateFrame("Frame", nil, self)
-	druidManaBar.colorClass = true
-	druidManaBar:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	druidManaBar:SetHeight(4)
-	druidManaBar:SetWidth(self.Portrait:GetWidth())
-	druidManaBar:SetFrameLevel(4)
-	local bd = CreateFrame("Frame", nil, druidManaBar)
-	bd:SetFrameLevel(4)
-	bd:SetPoint("TOPLEFT",-5,5)
-	bd:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop_old(bd)
-
-	local ManaBar = CreateFrame('StatusBar', nil, druidManaBar)
-	ManaBar:SetPoint('LEFT', druidManaBar, 'LEFT', 0, 0)
-	ManaBar:SetSize(druidManaBar:GetWidth(), druidManaBar:GetHeight())
-	ManaBar:SetStatusBarTexture(Califpornia.CFG.media.normTex)
-	ManaBar:GetStatusBarTexture():SetHorizTile(true)
-	ManaBar:SetFrameLevel(5)
-
-	local DMBText = lib.gen_fontstring(ManaBar, mfont, 10, "OUTLINE")
-	DMBText:SetPoint('CENTER', ManaBar, 'CENTER', 0, 0)
-	self:Tag(DMBText, '[cpuf:druidmana]')
-
-	druidManaBar.ManaBar = ManaBar
-	self.DruidMana = druidManaBar
-end
-
--- ECLIPSE BAR
-local eclipseBarBuff = function(self, unit)
-	if self.hasSolarEclipse then
-		self.eBarBG:SetBackdropBorderColor(1,1,.5,.7)
-	elseif self.hasLunarEclipse then
-		self.eBarBG:SetBackdropBorderColor(.2,.2,1,.7)
-	else
-		self.eBarBG:SetBackdropBorderColor(0,0,0,1)
-	end
-end
-
-lib.gen_eclipse = function(self)
-	if playerClass ~= "DRUID" then return end
-	
-	local eclipseBar = CreateFrame('Frame', nil, self)
-	eclipseBar:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	eclipseBar:SetHeight(4)
-	eclipseBar:SetWidth(self.Portrait:GetWidth())
-	eclipseBar:SetFrameLevel(4)
-	local h = CreateFrame("Frame", nil, eclipseBar)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop_old(h)
-	eclipseBar.eBarBG = h
-
-	local lunarBar = CreateFrame('StatusBar', nil, eclipseBar)
-	lunarBar:SetPoint('LEFT', eclipseBar, 'LEFT', 0, 0)
-	lunarBar:SetSize(eclipseBar:GetWidth(), eclipseBar:GetHeight())
-	lunarBar:SetStatusBarTexture(statusbar_texture)
-	lunarBar:SetStatusBarColor(0, .1, .7)
-	lunarBar:SetFrameLevel(5)
-
-	local solarBar = CreateFrame('StatusBar', nil, eclipseBar)
-	solarBar:SetPoint('LEFT', lunarBar:GetStatusBarTexture(), 'RIGHT', 0, 0)
-	solarBar:SetSize(eclipseBar:GetWidth(), eclipseBar:GetHeight())
-	solarBar:SetStatusBarTexture(statusbar_texture)
-	solarBar:SetStatusBarColor(1,1,.13)
-	solarBar:SetFrameLevel(5)
-
-    local EBText = lib.gen_fontstring(solarBar, mfont, 10, "OUTLINE")
-	EBText:SetPoint('CENTER', eclipseBar, 'CENTER', 0, 0)
-	self:Tag(EBText, '[pereclipse]')
-	
-	eclipseBar.SolarBar = solarBar
-	eclipseBar.LunarBar = lunarBar
-	self.EclipseBar = eclipseBar
-	self.EclipseBar.PostUnitAura = eclipseBarBuff
-end
-
--- TOTEM BAR
-lib.gen_totembar = function(self)
-	if playerClass ~= "SHAMAN" then return end
-
-	local width = (self.Portrait:GetWidth()) / 4 - 1
-	local height = 4
-	local TotemBar = CreateFrame("Frame", nil, self)
-	TotemBar:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	TotemBar:SetWidth(self.Portrait:GetWidth())
-	TotemBar:SetHeight(height)
-	TotemBar.Destroy = true
-	TotemBar.AbbreviateNames = true
-	TotemBar.UpdateColors = true
-	local bd = CreateFrame("Frame", nil, TotemBar)
-	bd:SetFrameLevel(4)
-	bd:SetPoint("TOPLEFT",-5,5)
-	bd:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop_old(bd)
-	TotemBar.BackDrop = bd
-	for i = 1, 4 do
-		local t = CreateFrame("Frame", nil, TotemBar)
-		t:SetPoint("LEFT", (i - 1) * (width + 2), 0)
-		t:SetWidth(width)
-		t:SetHeight(height)
-	
-		local bar = CreateFrame("StatusBar", nil, t)
-		bar:SetWidth(width)
-		bar:SetPoint"BOTTOM"
-		bar:SetHeight(4)
-		bar:SetFrameLevel(4)
-		bar:SetStatusBarTexture(statusbar_texture)
-		t.StatusBar = bar	
-		TotemBar[i] = t
-	end
-	self.TotemBar = TotemBar
-end
-
--- RUNE BAR
-lib.gen_runebar = function(self)
-	if playerClass ~= "DEATHKNIGHT" then return end
-
-	local runes = CreateFrame('Frame', nil, self)
-	runes:SetPoint('BOTTOMLEFT', self.Portrait, 'TOPLEFT', 0, 2)
-	runes:SetHeight(4)
-	runes:SetWidth(self.Portrait:GetWidth())
-	local h = CreateFrame("Frame", nil, runes)
-	h:SetFrameLevel(3)
-	h:SetPoint("TOPLEFT",-5,5)
-	h:SetPoint("BOTTOMRIGHT",5,-5)
-	lib.gen_backdrop_old(h)
-	
-	for i= 1, 6 do
-		local rune = CreateFrame('StatusBar', nil, runes)
-		rune:SetSize((self.Portrait:GetWidth() / 6)-2, 4)
-		rune:SetStatusBarTexture(statusbar_texture)
-		rune:SetFrameLevel(4)
-		
-		if (i == 1) then
-			rune:SetPoint('LEFT', runes, 'LEFT', 1, 0)
-		else
-			rune:SetPoint('TOPLEFT', runes[i-1], "TOPRIGHT", 2, 0)
-		end
-		local runeBG = rune:CreateTexture(nil, 'BACKGROUND')
-		runeBG:SetAllPoints(rune)
-		runeBG:SetTexture(statusbar_texture)
-		rune.bg = runeBG
-		rune.bg.multiplier = 0.3
-		runes[i] = rune
-	end
-	self.Runes = runes
 end
 
 -- THREAT BORDERS
@@ -851,14 +869,11 @@ function lib.UpdBorder(self, event, unit)
 	unit = unit or self.unit
 	if status and status > 1 then
 		local r, g, b = GetThreatStatusColor(status)
-		self.Thtborder:Show()
-		self.Thtborder:SetBackdropBorderColor(r, g, b, 1)
+		self.bd:SetBackdropBorderColor(r, g, b, 1)
 	else
-		self.Thtborder:SetBackdropBorderColor(r, g, b, 0)
-		self.Thtborder:Hide()
+		self.bd:SetBackdropBorderColor(unpack(self.bd.origColor))
 	end
 end
-
 -- PLUGIN STUFF
 -- oUF_DebuffHighlight
 lib.gen_debuff_hl = function(self)
@@ -869,7 +884,7 @@ lib.gen_debuff_hl = function(self)
 	dbh:SetVertexColor(0,0,0,0) -- set alpha to 0 to hide the texture
 	self.DebuffHighlight = dbh
 	self.DebuffHighlightAlpha = 0.5
-	self.DebuffHighlightFilter = true
+	self.DebuffHighlightFilter = Califpornia.CFG.unitframes.debuff_hl_dispellable
 end
 
 -- oUF_CombatFeedback
@@ -1240,7 +1255,6 @@ local function CreatePetTargetStyle(self, unit, isSingle)
 end
 local function CreatePartyStyle(self, unit, isSingle)
 	lib.init(self)
-
 	if (unit == "party") then
 
 		self.mystyle = "group"
@@ -1280,7 +1294,8 @@ local function CreatePartyStyle(self, unit, isSingle)
 		lib.gen_debuff_hl(self)
 
 	-- party target
-	elseif (self:GetAttribute("unitsuffix") == "target") then
+	elseif (unit == "partytarget") then
+--	elseif (self:GetAttribute("unitsuffix") == "target") then
 		self.mystyle = "partytarget"
 		
 		-- Size and Scale
@@ -1309,7 +1324,8 @@ local function CreatePartyStyle(self, unit, isSingle)
 
 	
 	-- party pet
-	elseif (self:GetAttribute("unitsuffix") == "pet") then
+	elseif (unit == "partypet") then
+--	elseif (self:GetAttribute("unitsuffix") == "pet") then
 		self.mystyle = "slim"
 		
 		-- Size and Scale
@@ -1476,6 +1492,56 @@ local function CreateRaidStyleDPS(self, unit, isSingle)
 		lib.gen_debuff_hl(self)
 end
 
+local function CreateRaidStyleGRID(self, unit, isSingle)
+		lib.init(self)
+
+		local fheight = 28
+		local hheight = 24
+		if Califpornia.CFG.unitframes.grid_icons == 3 then
+			fheight = 18
+			hheight = 14
+		end
+
+		self:SetScale(1)
+		self:SetSize(100, fheight)
+
+		self.Range = {
+			insideAlpha = 1,
+			outsideAlpha = .5,
+		}
+
+		-- Generate Bars
+		lib.gen_hpbar(self, hheight)
+		lib.gen_namestring(self, 12, 'grid')
+		lib.gen_infostring(self, 12, 'grid')
+		lib.gen_powerbar(self,3)
+		self.bd = lib.gen_backdrop(self, 0, 4)
+		lib.gen_highlight(self)
+		lib.gen_raidmark(self)
+		if Califpornia.CFG.unitframes.grid_aggro then
+			lib.gen_ttborder(self)
+		end
+		if Califpornia.CFG.unitframes.grid_icons ~= 3 then
+			lib.gen_auras(self,'grid')
+		end
+		if Califpornia.CFG.unitframes.grid_role then
+			lib.gen_lfdicon(self,true)
+		end
+		lib.gen_infoicons(self)
+
+		-- Frame specific stuff
+		self.Health.frequentUpdates = false
+		self.Health.colorSmooth = true
+--		self.Power.colorDisconnected = true
+		self.Power.colorClass = true
+		self.Power.colorReaction = true
+		self.Power.bg.multiplier = 0.5
+		-- plugins
+		if Califpornia.CFG.unitframes.grid_hl then
+			lib.gen_debuff_hl(self)
+		end
+end
+
 
 oUF:RegisterStyle("Player", CreatePlayerStyle)
 oUF:RegisterStyle("Target", CreateTargetStyle)
@@ -1489,6 +1555,7 @@ oUF:RegisterStyle("Party", CreatePartyStyle)
 oUF:RegisterStyle("Arena", CreateArenaStyle)
 
 oUF:RegisterStyle("RaidDPS", CreateRaidStyleDPS)
+oUF:RegisterStyle("RaidGRID", CreateRaidStyleGRID)
 --oUF:RegisterStyle("oUF_MT", CreateMTStyle)
 
 ------------------------------------------------------------------------
@@ -1614,6 +1681,32 @@ oUF:Factory(function(self)
 			end
 		end
 	else
+		oUF:SetActiveStyle("RaidGRID")
+		-- GRID-like raid layot, very minimalistic. 
+		for i = 1, maxGroups do
+			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaRaid"..i, nil, "solo,raid", 
+				"showRaid", true,  
+				"showPlayer", true,
+				"showSolo", true,
+				"showParty", true,
+				"xoffset", 3,
+				"yOffset", -5,
+				"groupFilter", i,
+				"groupBy", "GROUP",
+				"groupingOrder", "1,2,3,4,5,6,7,8",
+				"sortMethod", "INDEX",
+				"maxColumns", 1,
+				"unitsPerColumn", 5,
+				"columnSpacing", 7,
+				"point", "LEFT",
+				"columnAnchorPoint", "LEFT")
+			raid_groups[i]:SetScale(1)
+			if i == 1 then 
+				raid_groups[i]:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -260, 182)
+			else
+				raid_groups[i]:SetPoint("BOTTOMLEFT", raid_groups[i-1], "TOPLEFT", 0, 3)
+			end
+		end
 	end
 
 end)

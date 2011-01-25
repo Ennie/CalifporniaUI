@@ -142,10 +142,22 @@ Califpornia.CFG["buffs"] = {
 CalifporniaCFG["unitframes"] = {
 	-- general options
 	["enable"] = true,                     -- do i really need to explain this?
+	["movable_perchar"]		= false,
 	["dps_layout"]				= true,			-- use alternative raid/party layout (false == grid-like layout)
 	["showraidmanager"]		= false,			-- show default blizzard raid manager (for ground marks)
 	["iconsize"]				= 20,
 	["classbar"]				= true,
+
+
+	["debuff_hl_dispellable"]	= true,			-- highlight only dispellable debuff types. false == show all
+
+	-- Healer raidframes layout options --
+	["grid_aggro"]				= true,			-- display aggro borders
+	["grid_role"]				= true,			-- display LFD roles
+	["grid_icons"]				= 3, 				-- 1 == small icons under character name; 2 == big icons overlaps name; 3 == no icons
+	["grid_hl"]				= true,			-- use debuff highlight
+	
+
 
 
 	-- class specific elements
