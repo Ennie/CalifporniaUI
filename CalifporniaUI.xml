@@ -54,7 +54,7 @@
 	<Script file="datatext\guild.lua"/>
 	<Script file="datatext\bags.lua"/>
 	<Script file="datatext\stats.lua"/>
-	<Script file="datatext\currency.lua"/>
+	<Script file="datatext\hpsdps.lua"/>
 	<Script file="datatext\speed.lua"/>
 
 </Ui>

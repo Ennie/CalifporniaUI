@@ -124,7 +124,7 @@ CalifporniaCFG["datatext"] = {
 	["bags"] = 4,                -- show space used in bags on panels
 	["speed"] = 7,
 	["stats"] = 8,
-	["currency"] = 9,
+	["hpsdps"] = 9,
 	["classcolor"] = true,
 }
 

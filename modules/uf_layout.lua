@@ -842,22 +842,20 @@ end
 lib.gen_ttborder = function(self)
 	self:RegisterEvent("UNIT_THREAT_LIST_UPDATE", lib.UpdBorder)
 	self:RegisterEvent("UNIT_THREAT_SITUATION_UPDATE", lib.UpdBorder)
---	self:RegisterEvent('PLAYER_TARGET_CHANGED', lib.UpdBorder)
-	self:RegisterEvent('PARTY_MEMBERS_CHANGED', lib.UpdBorder)
 end
   
 -- Raid Frames Threat Highlight
 function lib.UpdBorder(self, event, unit)
-	local mytarget = UnitIsUnit('target', self.unit)
-	local status = UnitThreatSituation(self.unit)
----	if mytarget then
---		self.bd:SetBackdropBorderColor(.7,.7,.7,0.8)
---	elseif status and status then
-	if status and status then
+	if (self.unit ~= unit) then return end
+	local status = UnitThreatSituation(unit)
+	unit = unit or self.unit
+	if status and status > 1 then
 		local r, g, b = GetThreatStatusColor(status)
-		self.bd:SetBackdropBorderColor(r, g, b, 0.8)
-	else	
-		self.bd:SetBackdropBorderColor(unpack(self.bd.origColor))
+		self.Thtborder:Show()
+		self.Thtborder:SetBackdropBorderColor(r, g, b, 1)
+	else
+		self.Thtborder:SetBackdropBorderColor(r, g, b, 0)
+		self.Thtborder:Hide()
 	end
 end
 

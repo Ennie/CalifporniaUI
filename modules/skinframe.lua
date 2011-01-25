@@ -184,6 +184,17 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		for i = 1, 5 do
 			select(i, CharacterModelFrame:GetRegions()):Hide()
 		end
+
+		Califpornia.CreateBD(CharacterStatsPane, true)
+		RepBD = CreateFrame("Frame", nil, ReputationFrame)
+		RepBD:SetPoint("TOPLEFT", 8, -64)
+		RepBD:SetPoint("BOTTOMRIGHT", -32, 8)
+		RepBD:SetFrameLevel(ReputationFrame:GetFrameLevel()-1)
+		Califpornia.CreateBD(RepBD)
+--		ReputationFrame:SetPoint("TOPLEFT", CharacterFrame, 8 -64)
+--		ReputationFrame:SetAllPoints(CharacterFrameInset)
+
+
 		for i = 1, 3 do
 			select(i, QuestLogFrame:GetRegions()):Hide()
 		end
@@ -615,7 +626,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		AchievementFrameFilterDropDown:SetPoint("RIGHT", AchievementFrameHeader, "RIGHT", -120, -1)
 		for i = 1, 3 do
 			if _G["AchievementFrameTab"..i] then
-				for j = 1, 6 do
+				for j = 1, 9 do
 					select(j, _G["AchievementFrameTab"..i]:GetRegions()):Hide()
 					select(j, _G["AchievementFrameTab"..i]:GetRegions()).Show = Califpornia.dummy
 				end

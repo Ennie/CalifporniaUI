@@ -86,6 +86,17 @@ if CalifporniaCFG["datatext"].gold and Califpornia.CFG["datatext"].gold > 0 then
 				GameTooltip:AddLine' '
 				GameTooltip:AddLine("Server: ")
 				GameTooltip:AddDoubleLine("Total: ", FormatTooltipMoney(totalGold), 1, 1, 1, 1, 1, 1)
+				for i = 1, MAX_WATCHED_TOKENS do
+					local name, count, extraCurrencyType, icon, itemID = GetBackpackCurrencyInfo(i)
+					if name and i == 1 then
+						GameTooltip:AddLine(" ")
+						GameTooltip:AddLine(CURRENCY)
+						GameTooltip:AddLine(" ")
+					end
+					local r, g, b = 1,1,1
+					if itemID then r, g, b = GetItemQualityColor(select(3, GetItemInfo(itemID))) end
+					if name and count then GameTooltip:AddDoubleLine(name, count, r, g, b, 1, 1, 1) end
+				end
 				GameTooltip:Show()
 			end
 		end)
@@ -100,7 +111,7 @@ if CalifporniaCFG["datatext"].gold and Califpornia.CFG["datatext"].gold > 0 then
 	Stat:RegisterEvent("PLAYER_TRADE_MONEY")
 	Stat:RegisterEvent("TRADE_MONEY_CHANGED")
 	Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat:SetScript("OnMouseDown", function() OpenAllBags() end)
+	Stat:SetScript("OnMouseDown", function() ToggleCharacter("TokenFrame") end)
 	Stat:SetScript("OnEvent", OnEvent)
 	
 	-- reset gold data
