@@ -155,10 +155,9 @@ tAutoAcceptInvite:SetScript("OnEvent", function(self, event, ...)
 			
 			local BNtotal = BNGetNumFriends()
 			if BNtotal > 0 then
-				local presenceID, givenName, surname, toonName, toonID, client, isOnline
 				for i = 1, BNtotal do
-					local friendName, toonID = select(4, BNGetFriendInfo(i))
-					if CanCooperateWithToon(toonID) and friendName == leader then
+					local friendName, toonID, client, isOnline = select(4, BNGetFriendInfo(i))
+					if client == "WoW" and isOnline and CanCooperateWithToon(toonID) and friendName == leader then
 						AcceptGroup()
 						ingroup = true
 						break

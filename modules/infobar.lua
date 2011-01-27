@@ -101,27 +101,42 @@ function ShowBars()
 		Califpornia.Panels.datamid_holder:Show()
 	end
 end
+function HideBars()
+	rbar:Hide()
+	xbar:Hide()
+	repbar:Hide()
+	infoBarHolder:EnableMouse(false)
+	Califpornia.Panels.datamid_holder:Hide()
+end
 
 function TTShow()
 	mxp = UnitXPMax("player")
 	xp = UnitXP("player")
 	rxp = GetXPExhaustion()
 	name, standing, minrep, maxrep, value = GetWatchedFactionInfo()
-
+	local showexp, showpetexp = UnitLevel("player") ~= MAX_PLAYER_LEVEL, UnitExists("pet")
 	GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR")
-	if UnitLevel("player") ~= MAX_PLAYER_LEVEL then
-		GameTooltip:AddDoubleLine(COMBAT_XP_GAIN, xp.."|cffffd100/|r"..mxp.." |cffffd100/|r "..floor((xp/mxp)*1000)/10 .."%",NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
+	if showexp then
+		GameTooltip:AddDoubleLine(COMBAT_XP_GAIN, SVal(xp).."|cffffd100/|r"..SVal(mxp).." |cffffd100/|r "..floor((xp/mxp)*1000)/10 .."%",NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
 		if rxp then
-			GameTooltip:AddDoubleLine(TUTORIAL_TITLE26, rxp .." |cffffd100/|r ".. floor((rxp/mxp)*1000)/10 .."%", NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
-		end
-		if name then
-			GameTooltip:AddLine(" ")			
+			GameTooltip:AddDoubleLine(TUTORIAL_TITLE26, SVal(rxp) .." |cffffd100/|r ".. floor((rxp/mxp)*1000)/10 .."%", NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
 		end
 	end
+
+	if showpetexp then
+		petxp,petmaxxp = GetPetExperience();
+		if showexp then
+			GameTooltip:AddLine(" ")			
+		end
+		GameTooltip:AddDoubleLine(CURRENT_PET, SVal(petxp).."|cffffd100/|r"..SVal(petmaxxp).." |cffffd100/|r "..floor((petxp/petmaxxp)*1000)/10 .."%",NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
+	end
 	if name then
+		if showexp or showpetexp then
+			GameTooltip:AddLine(" ")			
+		end
 		GameTooltip:AddDoubleLine(FACTION, name, NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
 		GameTooltip:AddDoubleLine(STANDING, getglobal("FACTION_STANDING_LABEL"..standing), NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,FACTION_BAR_COLORS[standing].r, FACTION_BAR_COLORS[standing].g, FACTION_BAR_COLORS[standing].b)
-		GameTooltip:AddDoubleLine(REPUTATION, value-minrep .."|cffffd100/|r"..maxrep-minrep.." |cffffd100/|r "..floor((value-minrep)/(maxrep-minrep)*1000)/10 .."%", NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
+		GameTooltip:AddDoubleLine(REPUTATION, SVal(value-minrep) .."|cffffd100/|r"..SVal(maxrep-minrep).." |cffffd100/|r "..floor((value-minrep)/(maxrep-minrep)*1000)/10 .."%", NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b,1,1,1)
 	end
 		
 	GameTooltip:Show()
@@ -146,9 +161,7 @@ local MBUpdatePositions = function()
 		end
 	end
 	if cnt >= 1 then
-		mirrorBarHolder:Show()
-		infoBarHolder:Hide()
-		Califpornia.Panels.datamid_holder:Hide()
+		HideBars()
 		for _, bar in next, mirrorbars do
 			if bar:IsShown() then
 				bar:SetWidth(mirrorBarHolder:GetWidth()/cnt)
@@ -233,7 +246,7 @@ infoBarHolder:SetScript("OnEvent", function(this, event, arg1, arg2, ...)
 			MBPauseAll(arg1)
 		end
 	elseif event == "ADDON_LOADED" and arg1 == "CalifporniaUI" then
---		UIParent:UnregisterEvent("MIRROR_TIMER_START")
+		UIParent:UnregisterEvent("MIRROR_TIMER_START")
 		infoBarHolder:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_XP_UPDATE" and arg1 == "player" then
 		UpdExpValue()
