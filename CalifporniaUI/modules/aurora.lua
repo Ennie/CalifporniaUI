@@ -515,6 +515,16 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		-- Mail frame
 
+		OpenMailLetterButton:SetNormalTexture("")
+		OpenMailLetterButton:SetPushedTexture("")
+		OpenMailLetterButtonIconTexture:SetTexCoord(.08, .92, .08, .92)
+
+		local bg = CreateFrame("Frame", nil, OpenMailLetterButton)
+		bg:SetPoint("TOPLEFT", -1, 1)
+		bg:SetPoint("BOTTOMRIGHT", 1, -1)
+		bg:SetFrameLevel(OpenMailLetterButton:GetFrameLevel()-1)
+		Aurora.CreateBD(bg)
+
 		for i = 1, INBOXITEMS_TO_DISPLAY do
 			local it = _G["MailItem"..i]
 			local bu = _G["MailItem"..i.."Button"]
@@ -544,6 +554,21 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			button:GetRegions():Hide()
 
 			local bg = CreateFrame("Frame", nil, button)
+			bg:SetPoint("TOPLEFT", -1, 1)
+			bg:SetPoint("BOTTOMRIGHT", 1, -1)
+			bg:SetFrameLevel(0)
+			Aurora.CreateBD(bg, .25)
+		end
+
+		for i = 1, ATTACHMENTS_MAX_RECEIVE do
+			local bu = _G["OpenMailAttachmentButton"..i]
+			local ic = _G["OpenMailAttachmentButton"..i.."IconTexture"]
+
+			bu:SetNormalTexture("")
+			bu:SetPushedTexture("")
+			ic:SetTexCoord(.08, .92, .08, .92)
+
+			local bg = CreateFrame("Frame", nil, bu)
 			bg:SetPoint("TOPLEFT", -1, 1)
 			bg:SetPoint("BOTTOMRIGHT", 1, -1)
 			bg:SetFrameLevel(0)
@@ -620,10 +645,21 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		LFDQueueFrameCapBarBG:SetTexture(nil)
 
 		LFDQueueFrameCapBar.backdrop = CreateFrame("Frame", nil, LFDQueueFrameCapBar)
-		LFDQueueFrameCapBar.backdrop:SetPoint("TOPLEFT", LFDQueueFrameCapBar, "TOPLEFT", -1, -3)
-		LFDQueueFrameCapBar.backdrop:SetPoint("BOTTOMRIGHT", LFDQueueFrameCapBar, "BOTTOMRIGHT", -1, 1)
+		LFDQueueFrameCapBar.backdrop:SetPoint("TOPLEFT", LFDQueueFrameCapBar, "TOPLEFT", -1, -2)
+		LFDQueueFrameCapBar.backdrop:SetPoint("BOTTOMRIGHT", LFDQueueFrameCapBar, "BOTTOMRIGHT", 1, 2)
 		LFDQueueFrameCapBar.backdrop:SetFrameLevel(0)
 		Aurora.CreateBD(LFDQueueFrameCapBar.backdrop)
+
+		for i = 1, 2 do
+			local bu = _G["LFDQueueFrameCapBarCap"..i.."Marker"]
+			_G["LFDQueueFrameCapBarCap"..i.."MarkerTexture"]:Hide()
+
+			local cap = bu:CreateTexture(nil, "OVERLAY")
+			cap:SetSize(1, 14)
+			cap:SetPoint("CENTER")
+			cap:SetTexture(Aurora.backdrop)
+			cap:SetVertexColor(0, 0, 0)
+		end
 
 		LFDQueueFrameRandomScrollFrame:SetWidth(304)
 
@@ -951,13 +987,32 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			local ic = _G["Character"..slots[i].."SlotIconTexture"]
 			slot:DisableDrawLayer("BACKGROUND")
 			slot:SetNormalTexture("")
+			slot:SetPushedTexture("")
 			ic:SetTexCoord(.08, .92, .08, .92)
-			local bd = CreateFrame("Frame", nil, slot)
-			bd:SetPoint("TOPLEFT", -1, 1)
-			bd:SetPoint("BOTTOMRIGHT", 1, -1)
-			Aurora.CreateBD(bd)
-			bd:SetBackdropColor(0, 0, 0, 0)
+
+			slot.bd = CreateFrame("Frame", nil, slot)
+			slot.bd:SetPoint("TOPLEFT", -1, 1)
+			slot.bd:SetPoint("BOTTOMRIGHT", 1, -1)
+			Aurora.CreateBD(slot.bd, 0)
 		end
+
+		local slothandler = CreateFrame("Frame")
+		slothandler:RegisterEvent("VARIABLES_LOADED")
+		slothandler:RegisterEvent("UNIT_INVENTORY_CHANGED")
+		slothandler:SetScript("OnEvent", function()
+			for i = 1, #slots do
+				local slot = _G["Character"..slots[i].."Slot"]
+				local ic = _G["Character"..slots[i].."SlotIconTexture"]
+
+				if GetInventoryItemLink("player", i) then
+					ic:SetAlpha(1)
+					slot.bd:SetAlpha(1)
+				else
+					ic:SetAlpha(0)
+					slot.bd:SetAlpha(0)
+				end
+			end
+		end)
 
 		for i = 1, #PAPERDOLL_SIDEBARS do
 			local tab = _G["PaperDollSidebarTab"..i]
@@ -1412,6 +1467,10 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		WarGamesFrameBarLeft:Hide()
 		select(3, WarGamesFrame:GetRegions()):Hide()
 		WarGameStartButton_RightSeparator:Hide()
+		QuestLogFrameCompleteButton_LeftSeparator:Hide()
+		QuestLogFrameCompleteButton_RightSeparator:Hide()
+		WhoListScrollFrame:GetRegions():Hide()
+		select(2, WhoListScrollFrame:GetRegions()):Hide()
 
 		_G["ReadyCheckFrame"]:HookScript("OnShow", function(self) if UnitIsUnit("player", self.initiator) then self:Hide() end end)
 
@@ -1781,7 +1840,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		Aurora.ReskinClose(GossipFrameCloseButton, "TOPRIGHT", GossipFrame, "TOPRIGHT", -30, -20)
 		Aurora.ReskinClose(MerchantFrameCloseButton, "TOPRIGHT", MerchantFrame, "TOPRIGHT", -38, -14)
 		Aurora.ReskinClose(QuestFrameCloseButton, "TOPRIGHT", QuestFrame, "TOPRIGHT", -30, -20)
-		Aurora.ReskinClose(DressUpFrameCloseButton, "TOPRIGHT", DressUpFrame, "TOPRIGHT", -34, -14)
+		Aurora.ReskinClose(DressUpFrameCloseButton, "TOPRIGHT", DressUpFrame, "TOPRIGHT", -38, -16)
 		Aurora.ReskinClose(ItemTextCloseButton, "TOPRIGHT", ItemTextFrame, "TOPRIGHT", -32, -12)
 		Aurora.ReskinClose(GuildRegistrarFrameCloseButton, "TOPRIGHT", GuildRegistrarFrame, "TOPRIGHT", -30, -20)
 		Aurora.ReskinClose(TabardFrameCloseButton, "TOPRIGHT", TabardFrame, "TOPRIGHT", -38, -16)
@@ -1875,6 +1934,17 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		ABBD:SetPoint("BOTTOMRIGHT", 1, -1)
 		ABBD:SetFrameLevel(AuctionProgressBar:GetFrameLevel()-1)
 		Aurora.CreateBD(ABBD, .25)
+
+		AuctionProgressBarIcon:SetTexCoord(.08, .92, .08, .92)
+		local bg = CreateFrame("Frame", nil, AuctionProgressBar)
+		bg:SetPoint("TOPLEFT", AuctionProgressBarIcon, -1, 1)
+		bg:SetPoint("BOTTOMRIGHT", AuctionProgressBarIcon, 1, -1)
+		Aurora.CreateBD(bg, 0)
+
+		AuctionProgressBarText:SetPoint("CENTER")
+
+		Aurora.ReskinClose(AuctionProgressFrameCancelButton, "LEFT", AuctionProgressBar, "RIGHT", 4, 0)
+		select(15, AuctionProgressFrameCancelButton:GetRegions()):SetPoint("CENTER", 0, 2)
 
 		AuctionFrame:DisableDrawLayer("ARTWORK")
 		AuctionPortraitTexture:Hide()
@@ -2680,6 +2750,12 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		GuildFactionBar.bg:SetFrameLevel(0)
 		Aurora.CreateBD(GuildFactionBar.bg, .25)
 
+		local cap = GuildFactionBar:CreateTexture(nil, "OVERLAY")
+		cap:SetSize(1, 14)
+		cap:SetPoint("CENTER", GuildFactionBarCapMarker)
+		cap:SetTexture(Aurora.backdrop)
+		cap:SetVertexColor(0, 0, 0)
+
 		GuildXPFrame:ClearAllPoints()
 		GuildXPFrame:SetPoint("TOP", GuildFrame, "TOP", 0, -40)
 		GuildXPBarProgress:SetTexture(Aurora.backdrop)
@@ -2848,13 +2924,30 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			local slot = _G["Inspect"..slots[i].."Slot"]
 			slot:DisableDrawLayer("BACKGROUND")
 			slot:SetNormalTexture("")
-			local bd = CreateFrame("Frame", nil, slot)
-			bd:SetPoint("TOPLEFT", -1, 1)
-			bd:SetPoint("BOTTOMRIGHT", 1, -1)
-			bd:SetFrameLevel(0)
-			Aurora.CreateBD(bd, .25)
+			slot:SetPushedTexture("")
+			slot.bd = CreateFrame("Frame", nil, slot)
+			slot.bd:SetPoint("TOPLEFT", -1, 1)
+			slot.bd:SetPoint("BOTTOMRIGHT", 1, -1)
+			slot.bd:SetFrameLevel(0)
+			Aurora.CreateBD(slot.bd, .25)
 			_G["Inspect"..slots[i].."SlotIconTexture"]:SetTexCoord(.08, .92, .08, .92)
 		end
+		local slothandler = CreateFrame("Frame")
+		slothandler:RegisterEvent("INSPECT_READY")
+		slothandler:RegisterEvent("UNIT_INVENTORY_CHANGED")
+		slothandler:SetScript("OnEvent", function()
+			for i = 1, #slots do
+				local slot = _G["Inspect"..slots[i].."Slot"]
+				local ic = _G["Inspect"..slots[i].."SlotIconTexture"]
+				if GetInventoryItemLink("target", i) then
+					ic:SetAlpha(1)
+					slot.bd:SetAlpha(1)
+				else
+					ic:SetAlpha(0)
+					slot.bd:SetAlpha(0)
+				end
+			end
+		end)
 
 		Aurora.ReskinClose(InspectFrameCloseButton)
 	elseif addon == "Blizzard_ItemSocketingUI" then
@@ -3205,6 +3298,13 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 				ic:SetPoint("BOTTOMRIGHT", -1, 1)
 				Aurora.CreateBD(TradeSkillSkillIcon)
 				reskinned = true
+				if ic then
+					ic:SetTexCoord(.08, .92, .08, .92)
+					ic:SetPoint("TOPLEFT", 1, -1)
+					ic:SetPoint("BOTTOMRIGHT", -1, 1)
+					Aurora.CreateBD(TradeSkillSkillIcon)
+					reskinned = true
+				end
 			end
 		end)
 
