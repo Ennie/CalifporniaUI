@@ -3410,6 +3410,41 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 	end
 end)
 
+
+-- more efficient addon skinning
+Aurora.SkinFunctions = {}
+
+Aurora.SkinAddOn = function(addon, func)
+-- DEBUG	print(addon..' aurora skin addon')
+	if IsAddOnLoaded(addon) then
+		func()
+	else
+		Aurora.SkinFunctions[addon] = func
+	end
+end
+
+
+local SkinQueue = CreateFrame("Frame", nil, UIParent)
+SkinQueue:RegisterEvent("ADDON_LOADED")
+SkinQueue:SetScript("OnEvent", function(self, event, addon)
+	if (Aurora.SkinFunctions[addon] and type(Aurora.SkinFunctions[addon]) == "function") then
+		Aurora.SkinFunctions[addon]()
+	end
+end)
+
+
+-- Blizzard_RaidUI
+Aurora.SkinAddOn("Blizzard_RaidUI", function() 
+	RaidFrameRaidBrowserButton:ClearAllPoints()
+	RaidFrameRaidBrowserButton:SetPoint("TOPLEFT", FriendsFrame, "TOPLEFT", 30, -44)
+	Aurora.Reskin(RaidFrameRaidBrowserButton)
+	Aurora.Reskin(RaidFrameReadyCheckButton)
+
+-- DEBUG	print('Blizzard_RaidUI test')
+end)
+
+
+
 -- [[ Mac Options ]]
 
 if IsMacClient() then
