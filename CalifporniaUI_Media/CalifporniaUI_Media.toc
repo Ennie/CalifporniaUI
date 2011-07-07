@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 40300
 ## Title: |cffaa0000CalifporniaUI|r Media
 ## Version: 1.0
 ## Notes: CalifporniaUI SharedMedia module

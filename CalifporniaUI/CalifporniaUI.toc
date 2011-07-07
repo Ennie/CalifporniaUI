@@ -1,4 +1,4 @@
-﻿## Interface: 40100
+﻿## Interface: 40300
 ## Title: |cffaa0000CalifporniaUI|r Core
 ## Author: Ennie aka Califpornia
 ## Credits to: Caith, Caellian, Shestak, Haste, Tekkub, Alza, Roth, P3lim, Tulla, Hungtar, hankthetank, Ishtara and others...
