@@ -1,0 +1,8 @@
+## Interface: 40100
+## Title: |cffaa0000CalifporniaUI|r UnitFrames |cff224477Heal|r
+## Notes: CalifporniaUI unitframes healer raidframes
+## Author: Califpornia aka Ennie
+## Dependencies: CalifporniaUI_UnitFrames
+## Version: 1.0
+
+raid_heal.lua

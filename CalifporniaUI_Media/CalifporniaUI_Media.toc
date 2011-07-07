@@ -1,0 +1,12 @@
+## Interface: 40100
+## Title: |cffaa0000CalifporniaUI|r Media
+## Version: 1.0
+## Notes: CalifporniaUI SharedMedia module
+## Author: Califpornia aka Ennie
+## OptionalDeps: LibSharedMedia-3.0
+
+libs\LibStub.lua
+libs\CallbackHandler-1.0.lua
+libs\LibSharedMedia-3.0.lua
+
+CalifporniaUI_Media.lua

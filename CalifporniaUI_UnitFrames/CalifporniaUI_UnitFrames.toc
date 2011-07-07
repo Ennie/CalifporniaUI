@@ -1,0 +1,21 @@
+## Interface: 40100
+## Title: |cffaa0000CalifporniaUI|r UnitFrames
+## Notes: CalifporniaUI unitframes module
+## Author: Califpornia aka Ennie
+## Dependencies: oUF, CalifporniaUI_Media
+## Version: 1.0
+## OptionalDeps: LibSharedMedia-3.0
+
+plugins\boring_totembar.lua
+plugins\CombatFeedback.lua
+plugins\DebuffHighlight.lua
+plugins\movable.lua
+plugins\Smooth.lua
+
+cfg.lua
+auras.lua
+lib.lua
+tags.lua
+party.xml
+mt.xml
+layout.lua

@@ -1,0 +1,149 @@
+--[[	self:SetActiveStyle("Target")
+	local target = self:Spawn("Target", "oUF_Target")
+	target:SetPoint("TOPLEFT", player, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("ToT")
+	local targettarget = self:Spawn("targettarget", "oUF_tot")
+	targettarget:SetPoint("TOPLEFT", target, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("Pet")
+	local pet = self:Spawn("pet", "oUF_pet")
+	pet:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -43)
+
+	self:SetActiveStyle("PetTarget")
+	local pettarget = self:Spawn("pettarget", "oUF_pettarget")
+	pettarget:SetPoint("TOPLEFT", pet, "TOPRIGHT", 8, 0)
+
+	self:SetActiveStyle("Focus")
+	local focus = self:Spawn("focus", "oUF_focus")
+	focus:SetPoint("TOPLEFT", player, "BOTTOMLEFT", 0, -8)
+
+	self:SetActiveStyle("FocusTarget")
+	local focustarget = self:Spawn("focustarget", "oUF_focustarget")
+	focustarget:SetPoint("TOPLEFT", focus, "TOPRIGHT", 8, 0)
+
+	-- PARTY
+	self:SetActiveStyle("Party")
+	local party = self:SpawnHeader('oUF_Party', nil, 'party',
+		'showParty', true,
+		'showSolo', false,
+		'showPlayer', false,
+		'showRaid', false,
+		'yOffset', -50,
+		'xOffset', 0,
+		'maxColumns', 1,
+		'unitsPerColumn', 4,
+		'columnAnchorPoint', 'TOPLEFT',
+		'template', 'oUF_cParty',
+		'oUF-initialConfigFunction', [[
+			self:SetWidth(180)
+			self:SetHeight(40)
+		]]
+	)
+	party:SetPoint("TOPLEFT", UIParent, "TOPLEFT", Califpornia.CFG.common.screen_spacer, -150)
+
+	oUF:SetActiveStyle("Arena")
+	local arena = {}
+	for i = 1, 5 do
+		arena[i] = self:Spawn("arena"..i, "oUF_Arena"..i)
+		if i == 1 then
+			arena[i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -Califpornia.CFG.common.screen_spacer, -150)
+		else
+			arena[i]:SetPoint("TOP", arena[i-1], "BOTTOM", 0, -50)
+		end
+	end
+
+	oUF:SetActiveStyle("ArenaPet")
+	local arenapet = {}
+	for i = 1, 5 do
+		arenapet[i] = self:Spawn("arenapet"..i, "oUF_Arena"..i.."pet"):SetPoint("TOPRIGHT",arena[i], "BOTTOMRIGHT", 0, -6)
+	end
+
+	oUF:SetActiveStyle("ArenaTarget")
+	local arenatarget = {}
+	for i = 1, 5 do
+		arenatarget[i] = self:Spawn("arena"..i.."target", "oUF_Arena"..i.."target"):SetPoint("TOPLEFT",arena[i], "BOTTOMLEFT", 0, -6)
+	end
+
+
+	oUF:SetActiveStyle("Boss")
+	local boss = {}
+	for i = 1, MAX_BOSS_FRAMES do
+		boss[i] = self:Spawn("boss"..i, "oUF_Califpornia_Boss"..i)
+		if i == 1 then
+			boss[i]:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -Califpornia.CFG.common.screen_spacer, -150)
+		else
+			boss[i]:SetPoint('TOP', boss[i-1], 'BOTTOM', 0, -50)
+		end
+	end
+
+	-- RAID
+	CompactRaidFrameContainer:Hide()
+	if Califpornia.CFG.unitframes.showraidmanager ~= true then
+		CompactRaidFrameManager:SetAlpha(0)
+	end
+
+	local maxGroups = 5
+	if Califpornia.CFG.unitframes.allgroups then
+		maxGroups = 8
+	end
+	local raid_groups = {}
+
+
+	if Califpornia.CFG.unitframes.dps_layout then
+		oUF:SetActiveStyle("RaidDPS")
+		-- DPS raid layot, very minimalistic. 
+		for i = 1, maxGroups do
+			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaRaid"..i, nil, "raid", 
+				"showRaid", true,  
+				"showPlayer", true,
+				"showSolo", false,
+				"showParty", false,
+				"xoffset", 4,
+				"yOffset", -5,
+				"groupFilter", i,
+				"groupBy", "GROUP",
+				"groupingOrder", "1,2,3,4,5,6,7,8",
+				"sortMethod", "INDEX",
+				"maxColumns", 1,
+				"unitsPerColumn", 5,
+				"columnSpacing", 7,
+				"point", "TOP",
+				"columnAnchorPoint", "LEFT")
+			raid_groups[i]:SetScale(1)
+			if i == 1 then 
+				raid_groups[i]:SetPoint("TOPLEFT", UIParent, Califpornia.CFG.common.screen_spacer, -150)
+			elseif i == 6 and Califpornia.CFG.unitframes.allgroups then
+				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[1], "TOPRIGHT", 9, 0)
+			else
+				raid_groups[i]:SetPoint("TOPLEFT", raid_groups[i-1], "BOTTOMLEFT", 0, -15)
+			end
+		end
+	else
+		oUF:SetActiveStyle("RaidGRID")
+		-- GRID-like raid layot, very minimalistic. 
+		for i = 1, maxGroups do
+			raid_groups[i] = oUF:SpawnHeader("oUF_CalifporniaGRID"..i, nil, "solo,party,raid", 
+				"showRaid", true,  
+				"showPlayer", true,
+				"showSolo", true,
+				"showParty", true,
+				"xoffset", 3,
+				"yOffset", -5,
+				"groupFilter", i,
+				"groupBy", "GROUP",
+				"groupingOrder", "1,2,3,4,5,6,7,8",
+				"sortMethod", "INDEX",
+				"maxColumns", 1,
+				"unitsPerColumn", 5,
+				"columnSpacing", 7,
+				"point", "LEFT",
+				"columnAnchorPoint", "LEFT")
+			raid_groups[i]:SetScale(1)
+			if i == 1 then 
+				raid_groups[i]:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -260, 182)
+			else
+				raid_groups[i]:SetPoint("BOTTOMLEFT", raid_groups[i-1], "TOPLEFT", 0, 3)
+			end
+		end
+	end]]

@@ -1,0 +1,8 @@
+## Interface: 40100
+## Title: |cffaa0000CalifporniaUI|r UnitFrames |cffaa0000DPS|r
+## Notes: CalifporniaUI unitframes dps/tank raidframes
+## Author: Califpornia aka Ennie
+## Dependencies: CalifporniaUI_UnitFrames
+## Version: 1.0
+
+raid_dps.lua

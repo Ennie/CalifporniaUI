@@ -1,0 +1,73 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/">	
+	<Script file="modules\init.lua"/>
+
+
+
+
+
+
+
+
+
+
+
+	<Script file="modules\variables.lua"/>
+	<Script file="config\config.lua"/>
+	<Script file="modules\core.lua"/>
+
+
+
+
+
+	<Script file="modules\slashcmd.lua"/>
+	<Script file="modules\oldinit.lua"/>
+
+
+	<Script file="config\media.lua"/>
+
+
+	<Script file="libs\oUF_boring_totembar\main.lua"/>
+	<Script file="libs\oUF_CombatFeedback\oUF_CombatFeedback.lua"/>
+	<Script file="libs\oUF_DebuffHighlight\oUF_DebuffHighlight.lua"/>
+	<Script file="libs\oUF_Experience\oUF_Experience.lua"/>
+	<Script file="libs\oUF_MovableFrames\movable.lua"/>
+	<Script file="libs\oUF_RaidDebuffs\raidDebuffs.lua"/>
+	<Include file="modules\uf_party.xml"/>
+
+
+	<Script file="modules\util.lua"/>
+	<Script file="modules\panels.lua"/>
+
+	<Script file="modules\buttonfacade.lua"/>
+	<Script file="modules\chat.lua"/>
+	<Script file="modules\aurora.lua"/>
+	<Script file="modules\tooltip.lua"/>
+	<Script file="modules\infobar.lua"/>
+	<Script file="modules\misc.lua"/>
+	<Script file="modules\minimap.lua"/>
+	<Script file="modules\map.lua"/>
+	<Script file="modules\nameplates.lua"/>
+	<Script file="modules\bags.lua"/>
+	<Script file="modules\omnicc.lua"/>
+	<Script file="modules\addonmgr.lua"/>
+
+	<Include file="addonskins\load_addonskins.xml"/>
+
+	<Script file="modules\buffs.lua"/>
+
+	<Script file="modules\actionbars.lua"/>
+
+	<Script file="modules\uf_tags.lua"/>
+	<Script file="modules\uf_layout.lua"/>
+
+	<Script file="datatext\durability.lua"/>
+	<Script file="datatext\system.lua"/>
+	<Script file="datatext\friend.lua"/>
+	<Script file="datatext\gold.lua"/>
+	<Script file="datatext\guild.lua"/>
+	<Script file="datatext\bags.lua"/>
+	<Script file="datatext\stats.lua"/>
+	<Script file="datatext\hpsdps.lua"/>
+	<Script file="datatext\speed.lua"/>
+
+</Ui>
