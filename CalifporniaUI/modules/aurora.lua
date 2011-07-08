@@ -3415,7 +3415,6 @@ end)
 Aurora.SkinFunctions = {}
 
 Aurora.SkinAddOn = function(addon, func)
--- DEBUG	print(addon..' aurora skin addon')
 	if IsAddOnLoaded(addon) then
 		func()
 	else
@@ -3439,10 +3438,79 @@ Aurora.SkinAddOn("Blizzard_RaidUI", function()
 	RaidFrameRaidBrowserButton:SetPoint("TOPLEFT", FriendsFrame, "TOPLEFT", 30, -44)
 	Aurora.Reskin(RaidFrameRaidBrowserButton)
 	Aurora.Reskin(RaidFrameReadyCheckButton)
-
--- DEBUG	print('Blizzard_RaidUI test')
 end)
 
+-- PhoenixStyle
+Aurora.SkinAddOn("PhoenixStyle", function() 
+	-- left buttons
+	Aurora.CreateBD(_G["PSFmain2"])
+	Aurora.CreateSD(_G["PSFmain2"])
+	_G["PSFmain2_Text"]:SetPoint("TOP", _G["PSFmain2"], 20, -4)
+	Aurora.Reskin(_G["PSFmain2_Button3"])
+	Aurora.Reskin(_G["PSFmain2_Button4"])
+	Aurora.Reskin(_G["PSFmain2_Button5"])
+	Aurora.Reskin(_G["PSFmain2_Button51"])
+	Aurora.Reskin(_G["PSFmain2_Button52"])
+	Aurora.Reskin(_G["PSFmain2_Button7"])
+	Aurora.Reskin(_G["PSFmain2_Button71"])
+	Aurora.Reskin(_G["PSFmain2_Button72"])
+	Aurora.Reskin(_G["PSFmain2_Button73"])
+
+	Aurora.Reskin(_G["PSFmain2_ButtonRA"])
+	Aurora.Reskin(_G["PSFmain2_ButtonRA1"])
+	Aurora.Reskin(_G["PSFmain2_ButtonRA2"])
+	Aurora.Reskin(_G["PSFmain2_ButtonRA3"])
+
+	-- main "window"
+	Aurora.CreateBD(_G["PSFmain3"])
+	Aurora.CreateSD(_G["PSFmain3"])
+	_G["PSFmain3"]:SetPoint("TOPLEFT", _G["PSFmain2"], "TOPRIGHT", 5, 0)
+	Aurora.Reskin(_G["PSFmain1_Button2"])
+	_G["PSFmain1_Button2"]:SetPoint("BOTTOMRIGHT", _G["PSFmain1"], -20, 20)
+	Aurora.Reskin(_G["PSFmain3_Button1"])
+	Aurora.Reskin(_G["PSFmain3_Button111"])
+	Aurora.Reskin(_G["PSFmain3_Button112"])
+	_G["PSFmain3_Texttit"]:SetPoint("TOPLEFT", _G["PSFmain3"], 0, -6)
+	Aurora.ReskinCheck(_G["PSFmain3_CheckButton2"])
+
+	-- BossMod check
+	Aurora.CreateBD(_G["PSFbossmodframe"])
+	Aurora.CreateSD(_G["PSFbossmodframe"])
+	_G["PSFbossmodframe"]:SetPoint("TOPLEFT", _G["PSFmain2"], "TOPRIGHT", 5, 0)
+	_G["PSFbossmodframe_Text"]:SetPoint("TOPLEFT", _G["PSFbossmodframe"], 0, -6)
+
+	Aurora.Reskin(_G["PSFbossmodframe_Button1"])
+	_G["PSFbossmodframe_Button1"]:SetPoint("BOTTOMLEFT", _G["PSFbossmodframe"], 20, 20)
+
+--	_G["PSFbossmodframe_Textmark22"]:SetPoint("TOPLEFT", _G["PSFbossmodframe"], 20, -30)
+
+--	Aurora.ReskinDropDown(_G["DropDownchoosebssort"])
+
+
+	-- PS options
+	Aurora.CreateBD(_G["PSFmainoptionsps"])
+	Aurora.CreateSD(_G["PSFmainoptionsps"])
+	_G["PSFmainoptionsps"]:SetPoint("TOPLEFT", _G["PSFmain2"], "TOPRIGHT", 5, 0)
+	_G["PSFmainoptionsps_Text"]:SetPoint("TOPLEFT", _G["PSFmainoptionsps"], 0, -6)
+
+	Aurora.Reskin(_G["PSFmainoptionsps_Button1"])
+	Aurora.Reskin(_G["PSFmainoptionsps_Button12"])
+	Aurora.Reskin(_G["PSFmainoptionsps_Buttonopt"])
+	Aurora.Reskin(_G["PSFmainoptionsps_Buttonrezallsave"])
+
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton1"])
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton3"])
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton4"])
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton11"])
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton12"])
+	Aurora.ReskinCheck(_G["PSFmainoptionsps_CheckButton13"])
+
+	-- PS credits
+	Aurora.CreateBD(_G["PSFthanks"])
+	Aurora.CreateSD(_G["PSFthanks"])
+	_G["PSFthanks"]:SetPoint("TOPLEFT", _G["PSFmain2"], "TOPRIGHT", 5, 0)
+	_G["PSFthanks_Text"]:SetPoint("TOPLEFT", _G["PSFthanks"], 0, -6)
+end)
 
 
 -- [[ Mac Options ]]
