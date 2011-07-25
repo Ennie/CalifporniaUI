@@ -35,6 +35,18 @@ Aurora.CreateBD = function(f, a)
 	Califpornia.CreateBD(f)
 end
 
+Aurora.CreateBG = function(frame)
+	local f = frame
+	if frame:GetObjectType() == "Texture" then f = frame:GetParent() end
+
+	local bg = f:CreateTexture(nil, "BACKGROUND")
+	bg:SetPoint("TOPLEFT", frame, -1, 1)
+	bg:SetPoint("BOTTOMRIGHT", frame, 1, -1)
+	bg:SetTexture(Aurora.backdrop)
+--	bg:SetVertexColor(unpack(Califpornia.colors.m_backdrop))
+	bg:SetVertexColor(0, 0, 0)
+end
+
 Aurora.CreateSD = function(parent, size, r, g, b, alpha, offset)
 	local sd = CreateFrame("Frame", nil, parent)
 	sd.size = size or 5
@@ -157,9 +169,13 @@ end
 Aurora.ReskinDropDown = function(f)
 	local frame = f:GetName()
 
-	_G[frame.."Left"]:SetAlpha(0)
-	_G[frame.."Middle"]:SetAlpha(0)
-	_G[frame.."Right"]:SetAlpha(0)
+	local left = _G[frame.."Left"]
+	local middle = _G[frame.."Middle"]
+	local right = _G[frame.."Right"]
+
+	if left then left:SetAlpha(0) end
+	if middle then middle:SetAlpha(0) end
+	if right then right:SetAlpha(0) end
 
 	local down = _G[frame.."Button"]
 
@@ -461,8 +477,8 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		-- Pet stuff
 
-		--if class == "HUNTER" or class == "MAGE" or class == "DEATHKNIGHT" or class == "WARLOCK" then
-			--if class == "HUNTER" then
+		if class == "HUNTER" or class == "MAGE" or class == "DEATHKNIGHT" or class == "WARLOCK" then
+			if class == "HUNTER" then
 				PetStableFrame:DisableDrawLayer("BACKGROUND")
 				PetStableFrame:DisableDrawLayer("BORDER")
 				PetStableFrameInset:DisableDrawLayer("BACKGROUND")
@@ -493,18 +509,23 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 					bu:DisableDrawLayer("BACKGROUND")
 					_G["PetStableStabledPet"..i.."IconTexture"]:SetTexCoord(.08, .92, .08, .92)
 				end
-			--end
+			end
 
+			CharacterFrameTab3.SetPoint = Aurora.dummy
+
+			PetModelFrameRotateLeftButton:Hide()
+			PetModelFrameRotateRightButton:Hide()
 			PetModelFrameShadowOverlay:Hide()
 			PetPaperDollXPBar1:Hide()
 			select(2, PetPaperDollFrameExpBar:GetRegions()):Hide()
+			PetPaperDollPetModelBg:SetAlpha(0)
 
 			local bbg = CreateFrame("Frame", nil, PetPaperDollFrameExpBar)
 			bbg:SetPoint("TOPLEFT", -1, 1)
 			bbg:SetPoint("BOTTOMRIGHT", 1, -1)
 			bbg:SetFrameLevel(PetPaperDollFrameExpBar:GetFrameLevel()-1)
 			Aurora.CreateBD(bbg, .25)
-		--end
+		end
 
 		-- Ghost frame
 
@@ -592,15 +613,22 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			for i=1, GetCurrencyListSize() do
 				local button = _G["TokenFrameContainerButton"..i]
 
-				if button then
-					button.highlight:SetAlpha(0)
+				if button and not button.reskinned then
+					button.highlight:SetPoint("TOPLEFT", 1, 0)
+					button.highlight:SetPoint("BOTTOMRIGHT", -1, 0)
+					button.highlight.SetPoint = Aurora.dummy
+					button.highlight:SetTexture(r, g, b, .2)
+					button.highlight.SetTexture = Aurora.dummy
 					button.categoryMiddle:SetAlpha(0)	
 					button.categoryLeft:SetAlpha(0)	
 					button.categoryRight:SetAlpha(0)
 
-					if button.icon then
+					if button.icon and button.icon:GetTexture() then
 						button.icon:SetTexCoord(.08, .92, .08, .92)
+						Aurora.CreateBG(button.icon)
 					end
+
+					button.reskinned = true
 				end
 			end
 		end)
@@ -608,7 +636,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		-- Reputation frame
 
 		local function UpdateFactionSkins()
-			for i=1, GetNumFactions() do
+			for i = 1, GetNumFactions() do
 				local statusbar = _G["ReputationBar"..i.."ReputationBar"]
 
 				if statusbar then
@@ -679,13 +707,8 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 				if button then
 					icon:SetTexCoord(.08, .92, .08, .92)
 					if cta then cta:SetAlpha(0) end
-					if not button.bg then
-						button.bg = CreateFrame("Frame", nil, button)
-						button.bg:SetPoint("TOPLEFT", icon, "TOPLEFT", -1, 1)
-						button.bg:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 1, -1)
-						button.bg:SetFrameLevel(0)
-						Aurora.CreateBD(button.bg)
-						icon:SetParent(button.bg)
+					if not button.reskinned then
+						Aurora.CreateBG(icon)
 						icon:SetDrawLayer("OVERLAY")
 						count:SetDrawLayer("OVERLAY")
 						na:SetTexture(0, 0, 0, .25)
@@ -696,18 +719,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 						button.bg2:SetPoint("BOTTOMRIGHT", na, "BOTTOMRIGHT")
 						Aurora.CreateBD(button.bg2, 0)
 
-						if count then
-							count:SetParent(button.bg)
-						end
-						if role1 then
-							role1:SetParent(button.bg)
-						end
-						if role2 then
-							role2:SetParent(button.bg)
-						end
-						if role3 then
-							role3:SetParent(button.bg)
-						end
+						button.reskinned = true
 					end
 				end
 			end
@@ -716,16 +728,17 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		-- Spellbook
 
 		for i = 1, SPELLS_PER_PAGE do
+			local bu = _G["SpellButton"..i]
+			local ic = _G["SpellButton"..i.."IconTexture"]
 			_G["SpellButton"..i.."Background"]:SetAlpha(0)
 			_G["SpellButton"..i.."TextBackground"]:Hide()
 			_G["SpellButton"..i.."SlotFrame"]:SetAlpha(0)
 			_G["SpellButton"..i.."UnlearnedSlotFrame"]:SetAlpha(0)
 			_G["SpellButton"..i.."Highlight"]:SetAlpha(0)
 
-			local bu = _G["SpellButton"..i]
-			local ic = _G["SpellButton"..i.."IconTexture"]
-
+			bu:SetCheckedTexture("")
 			bu:SetPushedTexture("")
+
 			ic:SetTexCoord(.08, .92, .08, .92)
 			local bg = CreateFrame("Frame", nil, bu)
 			bg:SetPoint("TOPLEFT", ic, -1, 1)
@@ -752,16 +765,10 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		for i = 1, 5 do
 			local tab = _G["SpellBookSkillLineTab"..i]
-			tab:DisableDrawLayer("BACKGROUND")
+			tab:GetRegions():Hide()
 			tab:SetCheckedTexture(Aurora.checked)
 			local a1, p, a2, x, y = tab:GetPoint()
-			local bg = CreateFrame("Frame", nil, tab)
-			bg:SetPoint("TOPLEFT", -1, 1)
-			bg:SetPoint("BOTTOMRIGHT", 1, -1)
-			bg:SetFrameLevel(tab:GetFrameLevel()-1)
-			tab:SetPoint(a1, p, a2, x + 11, y)
-			Aurora.CreateSD(tab, 5, 0, 0, 0, 1, 1)
-			Aurora.CreateBD(bg, 1)
+			Aurora.CreateBG(tab)
 			_G["SpellBookSkillLineTab"..i.."TabardIconFrame"]:SetTexCoord(.08, .92, .08, .92)
 			select(4, tab:GetRegions()):SetTexCoord(.08, .92, .08, .92)
 		end
@@ -793,13 +800,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 				icon:ClearAllPoints()
 				icon:SetPoint("TOPLEFT", 2, -2)
 				icon:SetPoint("BOTTOMRIGHT", -2, 2)
-				if not bu.bg then
-					bu.bg = CreateFrame("Frame", nil, bu)
-					bu.bg:SetPoint("TOPLEFT", icon, -1, 1)
-					bu.bg:SetPoint("BOTTOMRIGHT", icon, 1, -1)
-					bu.bg:SetFrameLevel(0)
-					Aurora.CreateBD(bu.bg)
-				end
+				Aurora.CreateBG(icon)
 			end					
 		end
 
@@ -883,23 +884,34 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		MerchantBuyBackItemItemButtonIconTexture:SetPoint("BOTTOMRIGHT", -1, 1)
 
 		MerchantGuildBankRepairButton:SetPushedTexture("")
-		Aurora.CreateBD(MerchantGuildBankRepairButton)
-		MerchantGuildBankRepairButtonIcon:SetPoint("TOPLEFT", 1, -1)
-		MerchantGuildBankRepairButtonIcon:SetPoint("BOTTOMRIGHT", -1, 1)
+		Aurora.CreateBG(MerchantGuildBankRepairButton)
 		MerchantGuildBankRepairButtonIcon:SetTexCoord(0.61, 0.82, 0.1, 0.52)
 
 		MerchantRepairAllButton:SetPushedTexture("")
-		Aurora.CreateBD(MerchantRepairAllButton)
-		MerchantRepairAllIcon:SetPoint("TOPLEFT", 1, -1)
-		MerchantRepairAllIcon:SetPoint("BOTTOMRIGHT", -1, 1)
+		Aurora.CreateBG(MerchantRepairAllButton)
 		MerchantRepairAllIcon:SetTexCoord(0.34, 0.1, 0.34, 0.535, 0.535, 0.1, 0.535, 0.535)
 
 		MerchantRepairItemButton:SetPushedTexture("")
-		Aurora.CreateBD(MerchantRepairItemButton)
-		local ic = MerchantRepairItemButton:GetRegions()
-		ic:SetPoint("TOPLEFT", 1, -1)
-		ic:SetPoint("BOTTOMRIGHT", -1, 1)
-		ic:SetTexCoord(0.04, 0.24, 0.06, 0.5)
+		Aurora.CreateBG(MerchantRepairItemButton)
+		local ic = MerchantRepairItemButton:GetRegions():SetTexCoord(0.04, 0.24, 0.06, 0.5)
+
+		hooksecurefunc("MerchantFrame_UpdateCurrencies", function()
+			for i = 1, MAX_MERCHANT_CURRENCIES do
+				local bu = _G["MerchantToken"..i]
+				if bu and not bu.reskinned then
+					local ic = _G["MerchantToken"..i.."Icon"]
+					local co = _G["MerchantToken"..i.."Count"]
+
+					ic:SetTexCoord(.08, .92, .08, .92)
+					ic:SetDrawLayer("OVERLAY")
+					ic:SetPoint("LEFT", co, "RIGHT", 2, 0)
+					co:SetPoint("TOPLEFT", bu, "TOPLEFT", -2, 0)
+
+					Aurora.CreateBG(ic)
+					bu.reskinned = true
+				end
+			end
+		end)
 
 		-- Friends Frame
 
@@ -987,16 +999,21 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		for i = 1, #slots do
 			local slot = _G["Character"..slots[i].."Slot"]
 			local ic = _G["Character"..slots[i].."SlotIconTexture"]
-			slot:DisableDrawLayer("BACKGROUND")
+			_G["Character"..slots[i].."SlotFrame"]:Hide()
+
 			slot:SetNormalTexture("")
 			slot:SetPushedTexture("")
 			ic:SetTexCoord(.08, .92, .08, .92)
 
-			slot.bd = CreateFrame("Frame", nil, slot)
-			slot.bd:SetPoint("TOPLEFT", -1, 1)
-			slot.bd:SetPoint("BOTTOMRIGHT", 1, -1)
-			Aurora.CreateBD(slot.bd, 0)
+			slot.bg = slot:CreateTexture(nil, "BACKGROUND")
+			slot.bg:SetPoint("TOPLEFT", -1, 1)
+			slot.bg:SetPoint("BOTTOMRIGHT", 1, -1)
+			slot.bg:SetTexture(Aurora.backdrop)
+			slot.bg:SetVertexColor(0, 0, 0)
 		end
+
+		select(9, CharacterMainHandSlot:GetRegions()):Hide()
+		select(9, CharacterRangedSlot:GetRegions()):Hide()
 
 		hooksecurefunc("PaperDollItemSlotButton_Update", function()
 			for i = 1, #slots do
@@ -1005,10 +1022,10 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 				if GetInventoryItemLink("player", i) then
 					ic:SetAlpha(1)
-					slot.bd:SetAlpha(1)
+					slot.bg:SetAlpha(1)
 				else
 					ic:SetAlpha(0)
-					slot.bd:SetAlpha(0)
+					slot.bg:SetAlpha(0)
 				end
 			end
 		end)
@@ -1024,7 +1041,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 				end
 			end
 
-			tab.Highlight:SetTexture(c.r, c.g, c.b, .2)
+			tab.Highlight:SetTexture(r, g, b, .2)
 			tab.Highlight:SetPoint("TOPLEFT", 3, -4)
 			tab.Highlight:SetPoint("BOTTOMRIGHT", -1, 0)
 			tab.Hider:SetTexture(.3, .3, .3, .4)
@@ -1069,16 +1086,15 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 					local bu = _G["PaperDollEquipmentManagerPaneButton"..i]
 					local bd = _G["PaperDollEquipmentManagerPaneButton"..i.."Stripe"]
 					local ic = _G["PaperDollEquipmentManagerPaneButton"..i.."Icon"]
+					_G["PaperDollEquipmentManagerPaneButton"..i.."BgTop"]:SetAlpha(0)
+					_G["PaperDollEquipmentManagerPaneButton"..i.."BgMiddle"]:Hide()
+					_G["PaperDollEquipmentManagerPaneButton"..i.."BgBottom"]:SetAlpha(0)
 
-					bu:DisableDrawLayer("BACKGROUND")
 					bd:Hide()
 					bd.Show = Aurora.dummy
 					ic:SetTexCoord(.08, .92, .08, .92)
 
-					local f = CreateFrame("Frame", nil, bu)
-					f:SetPoint("TOPLEFT", ic, -1, 1)
-					f:SetPoint("BOTTOMRIGHT", ic, 1, -1)
-					Aurora.CreateBD(f, 0)
+					Aurora.CreateBG(ic)
 				end
 				sets = true
 			end
@@ -1107,6 +1123,18 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		line:SetPoint("RIGHT", QuestInfoSkillPointFrameIconTexture, 1, 0)
 		line:SetTexture(Aurora.backdrop)
 		line:SetVertexColor(0, 0, 0)
+
+		QuestInfoItemHighlight:SetParent(QuestFrame)
+		QuestInfoItemHighlight:SetBackdrop({
+			bgFile = Aurora.backdrop,
+		})
+		QuestInfoItemHighlight:SetBackdropColor(r, g, b, .2)
+
+		hooksecurefunc("QuestInfoItem_OnClick", function(self)
+			QuestInfoItemHighlight:ClearAllPoints()
+			QuestInfoItemHighlight:SetPoint("TOPLEFT", self, 41, -1)
+			QuestInfoItemHighlight:SetPoint("BOTTOMRIGHT", self, -1, 1)
+		end)
 
 		for i = 1, MAX_REQUIRED_ITEMS do
 			local bu = _G["QuestProgressItem"..i]
@@ -1183,7 +1211,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		end
 
 		PVPFrameConquestBarProgress:SetTexture(Aurora.backdrop)
-		PVPFrameConquestBarProgress:SetVertexColor(.9, 0, 0)
+		PVPFrameConquestBarProgress:SetGradient("VERTICAL", .7, 0, 0, .8, 0, 0)
 
 		local cap = PVPFrameConquestBarCap1Marker:CreateTexture(nil, "OVERLAY")
 		cap:SetSize(1, 14)
@@ -1201,16 +1229,12 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		for i = 1, 2 do
 			local bu = _G["StaticPopup"..i.."ItemFrame"]
-			local ic = _G["StaticPopup"..i.."ItemFrameIconTexture"]
 
 			_G["StaticPopup"..i.."ItemFrameNameFrame"]:Hide()
+			_G["StaticPopup"..i.."ItemFrameIconTexture"]:SetTexCoord(.08, .92, .08, .92)
 
 			bu:SetNormalTexture("")
-			ic:SetPoint("TOPLEFT", 1, -1)
-			ic:SetPoint("BOTTOMRIGHT", -1, 1)
-			ic:SetTexCoord(.08, .92, .08, .92)
-
-			Aurora.CreateBD(bu, .25)
+			Aurora.CreateBG(bu)
 		end
 
 		-- Encounter journal
@@ -1244,41 +1268,54 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		-- PvP cap bar
 
 		local function CaptureBar()
+			if not NUM_EXTENDED_UI_FRAMES then return end
 			for i = 1, NUM_EXTENDED_UI_FRAMES do
 				local barname = "WorldStateCaptureBar"..i
 				local bar = _G[barname]
 
-				if bar and bar:IsShown() then
+				if bar and bar:IsVisible() then
 					bar:ClearAllPoints()
 					bar:SetPoint("TOP", UIParent, "TOP", 0, -120)
 					if not bar.skinned then
-						_G[barname.."LeftBar"]:SetTexture(Aurora.backdrop)
-						_G[barname.."RightBar"]:SetTexture(Aurora.backdrop)
-						_G[barname.."MiddleBar"]:SetTexture(Aurora.backdrop)
-						_G[barname.."LeftBar"]:SetGradient("VERTICAL", .1, .1, .9, .2, .3, 1)
-						_G[barname.."RightBar"]:SetGradient("VERTICAL", .7, .1, .1, .9, .2, .2)
-						_G[barname.."MiddleBar"]:SetGradient("VERTICAL", .8, .8, .8, 1, 1, 1)
+						local left = _G[barname.."LeftBar"]
+						local right = _G[barname.."RightBar"]
+						local middle = _G[barname.."MiddleBar"]
+
+						left:SetTexture(Aurora.backdrop)
+						right:SetTexture(Aurora.backdrop)
+						middle:SetTexture(Aurora.backdrop)
+						left:SetDrawLayer("BORDER")
+						middle:SetDrawLayer("ARTWORK")
+						right:SetDrawLayer("BORDER")
+
+						left:SetGradient("VERTICAL", .1, .4, .9, .2, .6, 1)
+						right:SetGradient("VERTICAL", .7, .1, .1, .9, .2, .2)
+						middle:SetGradient("VERTICAL", .8, .8, .8, 1, 1, 1)
+
 						_G[barname.."RightLine"]:SetAlpha(0)
 						_G[barname.."LeftLine"]:SetAlpha(0)
 						select(4, bar:GetRegions()):Hide()
 						_G[barname.."LeftIconHighlight"]:SetAlpha(0)
 						_G[barname.."RightIconHighlight"]:SetAlpha(0)
-						bar.bg = CreateFrame("Frame", nil, bar)
-						bar.bg:SetPoint("TOPLEFT", _G[barname.."LeftBar"], -1, 1)
-						bar.bg:SetPoint("BOTTOMRIGHT", _G[barname.."RightBar"], 1, -1)
-						bar.bg:SetFrameLevel(0)
+
+						bar.bg = bar:CreateTexture(nil, "BACKGROUND")
+						bar.bg:SetPoint("TOPLEFT", left, -1, 1)
+						bar.bg:SetPoint("BOTTOMRIGHT", right, 1, -1)
+						bar.bg:SetTexture(Aurora.backdrop)
+						bar.bg:SetVertexColor(0, 0, 0)
+
 						bar.bgmiddle = CreateFrame("Frame", nil, bar)
-						bar.bgmiddle:SetPoint("TOPLEFT", _G[barname.."MiddleBar"], -1, 1)
-						bar.bgmiddle:SetPoint("BOTTOMRIGHT", _G[barname.."MiddleBar"], 1, -1)
-						Aurora.CreateSD(bar.bg, 5, 0, 0, 0, 1, -2)
+						bar.bgmiddle:SetPoint("TOPLEFT", middle, -1, 1)
+						bar.bgmiddle:SetPoint("BOTTOMRIGHT", middle, 1, -1)
 						Aurora.CreateBD(bar.bgmiddle, 0)
+
 						bar.skinned = true
 					end
 				end
 			end
 		end
 
-		hooksecurefunc("WorldStateAlwaysUpFrame_Update", CaptureBar)
+		hooksecurefunc("UIParent_ManageFramePositions", CaptureBar)
 
 		-- [[ Hide regions ]]
 
@@ -1540,6 +1577,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		WorldStateScoreFrameTopBorder:Hide()
 		WorldStateScoreFrameTopRightCorner:Hide()
 		select(9, QuestFrameGreetingPanel:GetRegions()):Hide()
+		QuestInfoItemHighlight:GetRegions():Hide()
 
 		ReadyCheckFrame:HookScript("OnShow", function(self) if UnitIsUnit("player", self.initiator) then self:Hide() end end)
 
@@ -1593,7 +1631,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		-- [[ Bags ]]
 
-		if not IsAddOnLoaded("Baggins") and not IsAddOnLoaded("Stuffing") and not IsAddOnLoaded("Combuctor") and not IsAddOnLoaded("cargBags") and not IsAddOnLoaded("ArkInventory") then
+		if not IsAddOnLoaded("Baggins") and not IsAddOnLoaded("Stuffing") and not IsAddOnLoaded("Combuctor") and not IsAddOnLoaded("cargBags") and not IsAddOnLoaded("famBags") and not IsAddOnLoaded("ArkInventory") then
 			for i = 1, 5 do
 				local con = _G["ContainerFrame"..i]
 				for j = 1, 7 do
@@ -1674,6 +1712,13 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			sb:ClearAllPoints()
 			sb:SetPoint("BOTTOMLEFT", GameTooltip, "BOTTOMLEFT", 1, 1)
 			sb:SetPoint("BOTTOMRIGHT", GameTooltip, "BOTTOMRIGHT", -1, 1)
+
+			local sep = GameTooltipStatusBar:CreateTexture(nil, "ARTWORK")
+			sep:SetHeight(1)
+			sep:SetPoint("BOTTOMLEFT", 0, 3)
+			sep:SetPoint("BOTTOMRIGHT", 0, 3)
+			sep:SetTexture(Aurora.backdrop)
+			sep:SetVertexColor(0, 0, 0)
 		end
 
 		-- [[ Map ]]
@@ -1934,7 +1979,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 		Aurora.Reskin(select(6, PVPBannerFrame:GetChildren()))
 
-		local closebuttons = {"LFDParentFrameCloseButton", "CharacterFrameCloseButton", "PVPFrameCloseButton", "SpellBookFrameCloseButton", "HelpFrameCloseButton", "PVPBannerFrameCloseButton", "RaidInfoCloseButton", "ContainerFrame1CloseButton", "ContainerFrame2CloseButton", "ContainerFrame3CloseButton", "ContainerFrame4CloseButton", "ContainerFrame5CloseButton", "RolePollPopupCloseButton", "ItemRefCloseButton", "TokenFramePopupCloseButton", "ReputationDetailCloseButton", "ChannelFrameDaughterFrameDetailCloseButton", "EncounterJournalCloseButton", "WorldStateScoreFrameCloseButton"}
+		local closebuttons = {"LFDParentFrameCloseButton", "CharacterFrameCloseButton", "PVPFrameCloseButton", "SpellBookFrameCloseButton", "HelpFrameCloseButton", "PVPBannerFrameCloseButton", "RaidInfoCloseButton", "ContainerFrame1CloseButton", "ContainerFrame2CloseButton", "ContainerFrame3CloseButton", "ContainerFrame4CloseButton", "ContainerFrame5CloseButton", "RolePollPopupCloseButton", "ItemRefCloseButton", "TokenFramePopupCloseButton", "ReputationDetailCloseButton", "ChannelFrameDaughterFrameDetailCloseButton", "EncounterJournalCloseButton", "WorldStateScoreFrameCloseButton", "LFDDungeonReadyStatusCloseButton"}
 		for i = 1, #closebuttons do
 			local closebutton = _G[closebuttons[i]]
 			Aurora.ReskinClose(closebutton)
@@ -2016,13 +2061,14 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		ArchaeologyFrameRankBarBorder:Hide()
 		ArchaeologyFrameRankBarBackground:Hide()
 		ArchaeologyFrameRankBarBar:SetTexture(Aurora.backdrop)
+		ArchaeologyFrameRankBarBar:SetGradient("VERTICAL", 0, .65, 0, 0, .75, 0)
 		ArchaeologyFrameRankBar:SetHeight(14)
 		Aurora.CreateBD(ArchaeologyFrameRankBar, .25)
 
 		ArchaeologyFrameArtifactPageSolveFrameStatusBarBarBG:Hide()
 		local bar = select(3, ArchaeologyFrameArtifactPageSolveFrameStatusBar:GetRegions())
 		bar:SetTexture(Aurora.backdrop)
-		bar:SetVertexColor(.65, .25, 0)
+		bar:SetGradient("VERTICAL", .65, .25, 0, .75, .35, .1)
 
 		local bg = CreateFrame("Frame", nil, ArchaeologyFrameArtifactPageSolveFrameStatusBar)
 		bg:SetPoint("TOPLEFT", -1, 1)
@@ -2157,7 +2203,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 			bu:SetHighlightTexture(Aurora.backdrop)
 			local hl = bu:GetHighlightTexture()
-			hl:SetVertexColor(c.r, c.g, c.b, .2)
+			hl:SetVertexColor(r, g, b, .2)
 			hl:ClearAllPoints()
 			hl:SetPoint("TOPLEFT", 0, -1)
 			hl:SetPoint("BOTTOMRIGHT", -1, 6)
@@ -2189,7 +2235,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 			bu:SetHighlightTexture(Aurora.backdrop)
 			local hl = bu:GetHighlightTexture()
-			hl:SetVertexColor(c.r, c.g, c.b, .2)
+			hl:SetVertexColor(r, g, b, .2)
 			hl:ClearAllPoints()
 			hl:SetPoint("TOPLEFT", 0, -1)
 			hl:SetPoint("BOTTOMRIGHT", -1, 6)
@@ -2221,7 +2267,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 			bu:SetHighlightTexture(Aurora.backdrop)
 			local hl = bu:GetHighlightTexture()
-			hl:SetVertexColor(c.r, c.g, c.b, .2)
+			hl:SetVertexColor(r, g, b, .2)
 			hl:ClearAllPoints()
 			hl:SetPoint("TOPLEFT", 0, -1)
 			hl:SetPoint("BOTTOMRIGHT", -1, 6)
@@ -2283,7 +2329,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		tex:SetPoint("TOPLEFT")
 		tex:SetPoint("BOTTOMRIGHT")
 		tex:SetTexture(Aurora.backdrop)
-		tex:SetGradient("VERTICAL", .25, .25, .25, .30, .30, .30)
+		tex:SetGradientAlpha("VERTICAL", 0, 0, 0, .3, .35, .35, .35, .35)
 
 		local inputs = {"BrowseMinLevel", "BrowseMaxLevel", "BrowseBidPriceGold", "BrowseBidPriceSilver", "BrowseBidPriceCopper", "BidBidPriceGold", "BidBidPriceSilver", "BidBidPriceCopper", "StartPriceGold", "StartPriceSilver", "StartPriceCopper", "BuyoutPriceGold", "BuyoutPriceSilver", "BuyoutPriceCopper", "AuctionsStackSizeEntry", "AuctionsNumStacksEntry"}
 		for i = 1, #inputs do
@@ -2303,6 +2349,10 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		for i = 1, 4 do
 			select(i, AchievementFrameHeader:GetRegions()):Hide()
 		end
+		AchievementFrameHeaderRightDDLInset:SetAlpha(0)
+		select(2, AchievementFrameAchievements:GetChildren()):Hide()
+		AchievementFrameAchievementsBackground:Hide()
+		select(3, AchievementFrameAchievements:GetRegions()):Hide()
 		local first = 1
 		hooksecurefunc("AchievementFrameCategories_Update", function()
 			if first == 1 then
@@ -2313,9 +2363,12 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			end
 		end)
 		AchievementFrameHeader:ClearAllPoints()
-		AchievementFrameHeader:SetPoint("TOP", AchievementFrame, "TOP", 0, 40)
+		AchievementFrameHeader:SetPoint("TOP", AchievementFrame, "TOP", 0, 36)
 		AchievementFrameFilterDropDown:ClearAllPoints()
-		AchievementFrameFilterDropDown:SetPoint("RIGHT", AchievementFrameHeader, "RIGHT", -120, -1)
+		AchievementFrameFilterDropDown:SetPoint("RIGHT", AchievementFrameHeader, "RIGHT", -120, 2)
+		AchievementFrameFilterDropDownText:ClearAllPoints()
+		AchievementFrameFilterDropDownText:SetPoint("CENTER", -10, 1)
+		AchievementFrameStatsBG:SetWidth(500)
 
 		for i = 1, 3 do
 			local tab = _G["AchievementFrameTab"..i]
@@ -2328,6 +2381,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		Aurora.ReskinScroll(AchievementFrameAchievementsContainerScrollBar)
 		Aurora.ReskinScroll(AchievementFrameStatsContainerScrollBar)
 		Aurora.ReskinScroll(AchievementFrameCategoriesContainerScrollBar)
+		Aurora.ReskinDropDown(AchievementFrameFilterDropDown)
 	elseif addon == "Blizzard_BarbershopUI" then
 		Aurora.SetBD(BarberShopFrame, 44, -75, -40, 44)
 		BarberShopFrameBackground:Hide()
@@ -2516,7 +2570,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			check:SetPoint("TOPLEFT", 39, -3)
 			check:SetPoint("BOTTOMRIGHT", -1, 3)
 			check:SetTexture(Aurora.backdrop)
-			check:SetVertexColor(c.r, c.g, c.b, .2)
+			check:SetVertexColor(r, g, b, .2)
 
 			local icbg = CreateFrame("Frame", nil, bu)
 			icbg:SetPoint("TOPLEFT", ic, -1, 1)
@@ -2710,14 +2764,11 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		Aurora.CreateBD(bg)
 		Aurora.CreateSD(bg)
 		Aurora.CreateBD(GuildMemberDetailFrame)
-		Aurora.CreateSD(GuildMemberDetailFrame)
 		Aurora.CreateBD(GuildMemberNoteBackground, .25)
 		Aurora.CreateBD(GuildMemberOfficerNoteBackground, .25)
 		Aurora.CreateBD(GuildLogFrame)
-		Aurora.CreateSD(GuildLogFrame)
 		Aurora.CreateBD(GuildLogContainer, .25)
 		Aurora.CreateBD(GuildNewsFiltersFrame)
-		Aurora.CreateSD(GuildNewsFiltersFrame)
 		Aurora.CreateBD(GuildTextEditFrame)
 		Aurora.CreateSD(GuildTextEditFrame)
 		Aurora.CreateBD(GuildTextEditContainer, .25)
@@ -2848,17 +2899,17 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		line:SetFrameLevel(GuildNewsBossModel:GetFrameLevel()-1)
 		Aurora.CreateBD(line, 0)
 
-		GuildNewsFiltersFrame:ClearAllPoints()
-		GuildNewsFiltersFrame:SetPoint("TOPLEFT", GuildFrame, "TOPRIGHT", 10, -10)
-		GuildMemberDetailFrame:ClearAllPoints()
-		GuildMemberDetailFrame:SetPoint("TOPLEFT", GuildFrame, "TOPRIGHT", 10, -10)
+		GuildNewsFiltersFrame:SetWidth(224)
+		GuildNewsFiltersFrame:SetPoint("TOPLEFT", GuildFrame, "TOPRIGHT", 1, -20)
+		GuildMemberDetailFrame:SetPoint("TOPLEFT", GuildFrame, "TOPRIGHT", 1, -28)
+		GuildLogFrame:SetPoint("TOPLEFT", GuildFrame, "TOPRIGHT", 1, 0)
 
 		for i = 1, 5 do
 			local bu = _G["GuildInfoFrameApplicantsContainerButton"..i]
 			Aurora.CreateBD(bu, .25)
 			bu:SetHighlightTexture("")
 			bu:GetRegions():SetTexture(Aurora.backdrop)
-			bu:GetRegions():SetVertexColor(c.r, c.g, c.b, .2)
+			bu:GetRegions():SetVertexColor(r, g, b, .2)
 		end
 
 		GuildFactionBarProgress:SetTexture(Aurora.backdrop)
@@ -2873,12 +2924,6 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		GuildFactionBar.bg:SetPoint("BOTTOMRIGHT", GuildFactionFrame, -3, 0)
 		GuildFactionBar.bg:SetFrameLevel(0)
 		Aurora.CreateBD(GuildFactionBar.bg, .25)
-
-		local cap = GuildFactionBar:CreateTexture(nil, "OVERLAY")
-		cap:SetSize(1, 14)
-		cap:SetPoint("CENTER", GuildFactionBarCapMarker)
-		cap:SetTexture(Aurora.backdrop)
-		cap:SetVertexColor(0, 0, 0)
 
 		GuildXPFrame:ClearAllPoints()
 		GuildXPFrame:SetPoint("TOP", GuildFrame, "TOP", 0, -40)
@@ -2961,7 +3006,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 
 					bu:SetHighlightTexture(Aurora.backdrop)
 					local hl = bu:GetHighlightTexture()
-					hl:SetVertexColor(c.r, c.g, c.b, .2)
+					hl:SetVertexColor(r, g, b, .2)
 					hl:SetPoint("TOPLEFT", 0, -1)
 					hl:SetPoint("BOTTOMRIGHT")
 
@@ -2981,6 +3026,62 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 				reskinnedrewards = true
 			end
 		end)
+
+		for i = 1, 16 do
+			local bu = _G["GuildRosterContainerButton"..i]
+			local ic = _G["GuildRosterContainerButton"..i.."Icon"]
+
+			bu:SetHighlightTexture(Aurora.backdrop)
+			bu:GetHighlightTexture():SetVertexColor(r, g, b, .2)
+
+			bu.bg = bu:CreateTexture(nil, "BACKGROUND")
+			bu.bg:SetPoint("TOPLEFT", ic, -1, 1)
+			bu.bg:SetPoint("BOTTOMRIGHT", ic, 1, -1)
+			bu.bg:SetTexture(Aurora.backdrop)
+			bu.bg:SetVertexColor(0, 0, 0)
+		end
+
+		local tcoords = {
+			["WARRIOR"]     = {0.02, 0.23, 0.02, 0.23},
+			["MAGE"]        = {0.27, 0.47609375, 0.02, 0.23},
+			["ROGUE"]       = {0.51609375, 0.7221875, 0.02, 0.23},
+			["DRUID"]       = {0.7621875, 0.96828125, 0.02, 0.23},
+			["HUNTER"]      = {0.02, 0.23, 0.27, 0.48},
+			["SHAMAN"]      = {0.27, 0.47609375, 0.27, 0.48},
+			["PRIEST"]      = {0.51609375, 0.7221875, 0.27, 0.48},
+			["WARLOCK"]     = {0.7621875, 0.96828125, 0.27, 0.48},
+			["PALADIN"]     = {0.02, 0.23, 0.52, 0.73},
+			["DEATHKNIGHT"] = {0.27, .48, 0.52, .73},
+		}
+
+		local UpdateIcons = function()
+			local index
+			local offset = HybridScrollFrame_GetOffset(GuildRosterContainer)
+			local totalMembers, onlineMembers = GetNumGuildMembers()
+			local visibleMembers = onlineMembers
+			local numbuttons = #GuildRosterContainer.buttons
+			if GetGuildRosterShowOffline() then
+				visibleMembers = totalMembers
+			end
+
+			for i = 1, numbuttons do
+				local button = GuildRosterContainer.buttons[i]
+				index = offset + i
+				local name, _, _, _, _, _, _, _, _, _, classFileName  = GetGuildRosterInfo(index)
+				if name and index <= visibleMembers then
+					if button.icon:IsShown() then
+						button.icon:SetTexCoord(unpack(tcoords[classFileName]))
+						if button.bg then button.bg:Show() end
+					else
+						if button.bg then button.bg:Hide() end
+					end
+				end
+			end
+		end
+
+		hooksecurefunc("GuildRoster_Update", UpdateIcons)
+		GuildRosterContainer:HookScript("OnMouseWheel", UpdateIcons)
+		GuildRosterContainer:HookScript("OnVerticalScroll", UpdateIcons)
 
 		GuildLevelFrame:SetAlpha(0)
 		local closebutton = select(4, GuildTextEditFrame:GetChildren())
@@ -3092,7 +3193,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			Aurora.CreateBD(bu, .25)
 			bu:SetHighlightTexture("")
 			bu:GetRegions():SetTexture(Aurora.backdrop)
-			bu:GetRegions():SetVertexColor(c.r, c.g, c.b, .2)
+			bu:GetRegions():SetVertexColor(r, g, b, .2)
 		end
 		for i = 1, 9 do
 			select(i, LookingForGuildCommentInputFrame:GetRegions()):Hide()
@@ -3248,6 +3349,41 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		--PlayerTalentFrameTitleGlowLeft:SetAlpha(0)
 		--PlayerTalentFrameTitleGlowRight:SetAlpha(0)
 		--PlayerTalentFrameTitleGlowCenter:SetAlpha(0)
+
+		if class == "HUNTER" then
+			PlayerTalentFramePetPanel:DisableDrawLayer("BORDER")
+			PlayerTalentFramePetModelBg:Hide()
+			PlayerTalentFramePetShadowOverlay:Hide()
+			PlayerTalentFramePetModelRotateLeftButton:Hide()
+			PlayerTalentFramePetModelRotateRightButton:Hide()
+			PlayerTalentFramePetIconBorder:Hide()
+			PlayerTalentFramePetPanelHeaderIconBorder:Hide()
+			PlayerTalentFramePetPanelHeaderBackground:Hide()
+			PlayerTalentFramePetPanelHeaderBorder:Hide()
+
+			PlayerTalentFramePetIcon:SetTexCoord(.08, .92, .08, .92)
+			Aurora.CreateBG(PlayerTalentFramePetIcon)
+
+			PlayerTalentFramePetPanelHeaderIconIcon:SetTexCoord(.08, .92, .08, .92)
+			Aurora.CreateBG(PlayerTalentFramePetPanelHeaderIcon)
+
+			PlayerTalentFramePetPanelHeaderIcon:SetPoint("TOPLEFT", PlayerTalentFramePetPanelHeaderBackground, "TOPLEFT", -2, 3)
+			PlayerTalentFramePetPanelName:SetPoint("LEFT", PlayerTalentFramePetPanelHeaderBackground, "LEFT", 62, 8)
+
+			local bg = CreateFrame("Frame", nil, PlayerTalentFramePetPanel)
+			bg:SetPoint("TOPLEFT", 4, -6)
+			bg:SetPoint("BOTTOMRIGHT", -4, 4)
+			bg:SetFrameLevel(0)
+			Aurora.CreateBD(bg, .25)
+
+			local line = PlayerTalentFramePetPanel:CreateTexture(nil, "BACKGROUND")
+			line:SetHeight(1)
+			line:SetPoint("TOPLEFT", 4, -52)
+			line:SetPoint("TOPRIGHT", -4, -52)
+			line:SetTexture(Aurora.backdrop)
+			line:SetVertexColor(0, 0, 0)
+		end
+
 		for i = 1, 3 do
 			local tab = _G["PlayerTalentFrameTab"..i]
 			if tab then
@@ -3300,6 +3436,23 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			Aurora.CreateBD(panel.bg2, .25)
 
 			Aurora.Reskin(_G["PlayerTalentFramePanel"..i.."SelectTreeButton"])
+
+			for j = 1, 28 do
+				local bu = _G["PlayerTalentFramePanel"..i.."Talent"..j]
+				local ic = _G["PlayerTalentFramePanel"..i.."Talent"..j.."IconTexture"]
+
+				_G["PlayerTalentFramePanel"..i.."Talent"..j.."Slot"]:SetAlpha(0)
+				_G["PlayerTalentFramePanel"..i.."Talent"..j.."SlotShadow"]:SetAlpha(0)
+				_G["PlayerTalentFramePanel"..i.."Talent"..j.."GoldBorder"]:SetAlpha(0)
+
+				bu:SetPushedTexture("")
+				bu.SetPushedTexture = Aurora.dummy
+				ic:SetTexCoord(.08, .92, .08, .92)
+				ic:SetPoint("TOPLEFT", 1, -1)
+				ic:SetPoint("BOTTOMRIGHT", -1, 1)
+
+				Aurora.CreateBD(bu)
+			end
 		end
 		for i = 1, 2 do
 			_G["PlayerSpecTab"..i.."Background"]:Hide()
@@ -3360,6 +3513,8 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		TradeSkillCancelButton_LeftSeparator:Hide()
 		TradeSkillViewGuildCraftersButton_RightSeparator:Hide()
 		TradeSkillGuildCraftersFrameTrack:Hide()
+		TradeSkillRankFrameBorder:Hide()
+		TradeSkillRankFrameBackground:Hide()
 
 		TradeSkillDetailScrollFrame:SetHeight(176)
 
@@ -3367,11 +3522,21 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		TradeSkillGuildFrame:ClearAllPoints()
 		TradeSkillGuildFrame:SetPoint(a1, p, a2, x + 16, y)
 
+		TradeSkillLinkButton:SetPoint("LEFT", 0, -1)
+
 		Aurora.Reskin(TradeSkillCreateButton)
 		Aurora.Reskin(TradeSkillCreateAllButton)
 		Aurora.Reskin(TradeSkillCancelButton)
 		Aurora.Reskin(TradeSkillViewGuildCraftersButton)
 		Aurora.Reskin(TradeSkillFilterButton)
+
+		TradeSkillRankFrame:SetStatusBarTexture(Aurora.backdrop)
+
+		local bg = CreateFrame("Frame", nil, TradeSkillRankFrame)
+		bg:SetPoint("TOPLEFT", -1, 1)
+		bg:SetPoint("BOTTOMRIGHT", 1, -1)
+		bg:SetFrameLevel(TradeSkillRankFrame:GetFrameLevel()-1)
+		Aurora.CreateBD(bg, .25)
 
 		for i = 1, MAX_TRADE_SKILL_REAGENTS do
 			local bu = _G["TradeSkillReagent"..i]
@@ -3426,6 +3591,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		Aurora.ReskinInput(TradeSkillFrameSearchBox)
 		Aurora.ReskinArrow(TradeSkillDecrementButton, 1)
 		Aurora.ReskinArrow(TradeSkillIncrementButton, 2)
+		Aurora.ReskinArrow(TradeSkillLinkButton, 2)
 	elseif addon == "Blizzard_TrainerUI" then
 		Aurora.SetBD(ClassTrainerFrame)
 		ClassTrainerFrame:DisableDrawLayer("BACKGROUND")
@@ -3456,7 +3622,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 		check:SetPoint("TOPLEFT", 43, -3)
 		check:SetPoint("BOTTOMRIGHT", -1, 3)
 		check:SetTexture(Aurora.backdrop)
-		check:SetVertexColor(c.r, c.g, c.b, .2)
+		check:SetVertexColor(r, g, b, .2)
 
 		local icbg = CreateFrame("Frame", nil, ClassTrainerFrameSkillStepButton)
 		icbg:SetPoint("TOPLEFT", ClassTrainerFrameSkillStepButtonIcon, -1, 1)
@@ -3486,7 +3652,7 @@ Skin:SetScript("OnEvent", function(self, event, addon)
 			check:SetPoint("TOPLEFT", 43, -6)
 			check:SetPoint("BOTTOMRIGHT", -1, 7)
 			check:SetTexture(Aurora.backdrop)
-			check:SetVertexColor(c.r, c.g, c.b, .2)
+			check:SetVertexColor(r, g, b, .2)
 
 			local icbg = CreateFrame("Frame", nil, bu)
 			icbg:SetPoint("TOPLEFT", ic, -1, 1)

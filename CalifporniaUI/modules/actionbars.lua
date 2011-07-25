@@ -163,12 +163,12 @@ Califpornia.Bars["Main"]:SetScript("OnEvent", function(self, event, ...)
 				button:SetAttribute("actionpage", tonumber(newstate))
 			end
 		]])
-
+-- possibly fix for UI disappearing when entering vehicle
 		self:SetAttribute("_onstate-vehicleupdate", [[		
 			if newstate == "s2" then
-				self:GetParent():Hide()
+--				self:GetParent():Hide()
 			else
-				self:GetParent():Show()
+--				self:GetParent():Show()
 			end	
 		]])
 		
