@@ -395,26 +395,31 @@ SLASH_SETRECOUNT1 = "/setrecount"
 SlashCmdList["SETRECOUNT"] = function() SetRecountZ() end
 
 
--- WF autohide
+-- WF autohide on BossFrame show by Haste
 if Califpornia.CFG["tweak"].wf_autohide then
-local wfhider = CreateFrame("Frame")
-local wf = WatchFrame
+	local wfhider = CreateFrame'Frame'
 
-local wf_hidden = false
+	wfhider:RegisterEvent("PLAYER_ENTERING_WORLD")
+	wfhider:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
+	wfhider:RegisterEvent("UNIT_TARGETABLE_CHANGED")
+	wfhider:RegisterEvent("PLAYER_REGEN_ENABLED")
 
-
-wfhider:RegisterEvent("PLAYER_REGEN_DISABLED")
-wfhider:RegisterEvent("PLAYER_REGEN_ENABLED")
-wfhider:SetScript("OnEvent", function(self, event, ...)
-		if event == "PLAYER_REGEN_DISABLED" and not WatchFrame.userCollapsed then
-		WatchFrame.userCollapsed = true;
-			wf_hidden = true
-			WatchFrame_Collapse(wf);
+	local BossExists = function()
+		for i=1,MAX_BOSS_FRAMES do
+			if(UnitExists('boss' .. i)) then
+				return true
+			end
 		end
-		if event == "PLAYER_REGEN_ENABLED" and wf_hidden then
-			wf_hidden = false
-			WatchFrame.userCollapsed = nil;
-			WatchFrame_Expand(wf);
+	end
+
+	-- Defensive coding inc.
+	wfhider:SetScript('OnEvent', function(self, event)
+		if(BossExists()) then
+			if(not WatchFrame.collapsed) then
+				WatchFrame_CollapseExpandButton_OnClick(WatchFrame_CollapseExpandButton)
+			end
+		elseif(WatchFrame.collapsed and not InCombatLockdown()) then
+			WatchFrame_CollapseExpandButton_OnClick(WatchFrame_CollapseExpandButton)
 		end
-end)
+	end)
 end
