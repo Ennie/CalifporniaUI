@@ -127,7 +127,6 @@ function PositionMainBar()
 		Califpornia.SkinButton(button, true, false)
 		SetButtonFontsBig(button)
 		button:ClearAllPoints()
-		
 		if i == 1 then
 			button:SetPoint("BOTTOMLEFT", CalifporniaActionBarMain, Califpornia.CFG.actionbars.btn_spacing, Califpornia.CFG.actionbars.btn_spacing)
 		else
@@ -406,6 +405,9 @@ local function FlyoutButtonPos(self, buttons, direction)
 	end
 end
 local function styleflyout(self)
+	if not self.FlyoutArrow then
+		return;
+	end
 	self.FlyoutBorder:SetAlpha(0)
 	self.FlyoutBorderShadow:SetAlpha(0)
 	

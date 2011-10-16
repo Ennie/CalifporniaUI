@@ -57,6 +57,7 @@ oUF:RegisterStyle("RaidGRID", CreateRaidStyleGRID)
 
 oUF:Factory(function(self)
 	CompactRaidFrameContainer:Hide()
+	CompactRaidFrameContainer.Show = Califpornia.dummy
 	if cfg.misc.blizzmanager ~= true then
 		CompactRaidFrameManager:SetAlpha(0)
 	end

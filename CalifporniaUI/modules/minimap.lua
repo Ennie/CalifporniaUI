@@ -44,9 +44,9 @@ MiniMapBattlefieldFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
 MiniMapLFGFrame:ClearAllPoints()
 MiniMapLFGFrameBorder:SetAlpha(0)
 MiniMapLFGFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
-LFDSearchStatus:ClearAllPoints()
-LFDSearchStatus:SetPoint("BOTTOMRIGHT", Minimap, "TOPRIGHT", 0, 6)
-LFDSearchStatus:SetScale(0.8)
+LFGSearchStatus:ClearAllPoints()
+LFGSearchStatus:SetPoint("BOTTOMRIGHT", Minimap, "TOPRIGHT", 0, 6)
+LFGSearchStatus:SetScale(0.8)
 
 MiniMapMailFrame:ClearAllPoints()
 MiniMapMailFrame:SetPoint("TOPRIGHT", Minimap, 0, 0)
@@ -90,15 +90,17 @@ local menuList = {
     {text = SOCIAL_BUTTON,
     func = function() ToggleFriendsFrame(1) end},
     {text = PLAYER_V_PLAYER,
-    func = function() ToggleFrame(PVPFrame) end},
+    func = function() TogglePVPFrame() end},
     {text = LFG_TITLE,
-    func = function() ToggleFrame(LFDParentFrame) end},
-    {text = LOOKING_FOR_RAID,
-    func = function() ToggleFrame(LFRParentFrame) end},
+    func = function() ToggleLFDParentFrame() end},
+    {text = RAIDS,
+    func = function() ToggleRaidFrame() end},
+    {text = GUILD,
+    func = function() ToggleGuildFrame() end},
     {text = LOOKINGFORGUILD,
     func = function() ToggleGuildFinder() end},
     {text = ENCOUNTER_JOURNAL,
-    func = function() ToggleFrame(EncounterJournal) end},
+    func = function() ToggleEncounterJournal() end},
     {text = HELP_BUTTON,
     func = function() ToggleHelpFrame() end},
 }

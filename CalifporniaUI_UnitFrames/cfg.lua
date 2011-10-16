@@ -82,6 +82,7 @@ CalifporniaUI_UnitFrames.cfg = {
 		},
 		PRIEST = { 
 			[6788] = false, -- Power Word: Shield
+			[41635] = true, -- Prayer of Mending
 			[139] = false, -- Renew
 			[33076] = false, -- Prayer of Mending
 		},

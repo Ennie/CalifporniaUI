@@ -1,4 +1,5 @@
 ﻿Califpornia.CFG["addonskins"] = {
+	["aurora"] = false,
 	["DBM"] = true,
 }
 
@@ -83,6 +84,7 @@ CalifporniaCFG["map"] = {
 }
 CalifporniaCFG["chat"] = {
 	["enable"]				 = true,
+	["history"]				 = true,
 	["tabfont"]				 = {[[Interface\AddOns\CalifporniaUI\media\fonts\big_noodle_tilting.ttf]], 12, "OUTLINE"},
 	["editboxfont"]				 = {[[Interface\AddOns\CalifporniaUI\media\fonts\normal_font.ttf]], 10, "NORMAL"},
 	["whispersound"] = true,				 -- play a sound when receiving whisper

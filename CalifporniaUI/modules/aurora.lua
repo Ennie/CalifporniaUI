@@ -1,3 +1,6 @@
+if not CalifporniaCFG.addonskins.aurora then return end
+
+
 local map = true -- yay map
 
 -- [[ FreeUI functions ]]
