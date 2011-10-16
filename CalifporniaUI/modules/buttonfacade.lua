@@ -632,5 +632,16 @@ do
 	end
 end
 
-Califpornia.SkinButton = ApplySkin
+--Califpornia.SkinButton = ApplySkin
 --Califpornia.SkinButton = function() end
+-- ГРАБЛИ, 4.3 фикс
+Califpornia.SkinButton = function(btn, gloss, backdrop)
+	local bname = btn:GetName()
+	if _G[bname..'FloatingBG'] then
+		 _G[bname..'FloatingBG']:Hide()
+		 _G[bname..'FloatingBG'].Show = function() end
+	end
+	ApplySkin(btn, gloss, backdrop)
+end
+
+

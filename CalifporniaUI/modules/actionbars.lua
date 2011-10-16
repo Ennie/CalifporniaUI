@@ -118,7 +118,6 @@ local function GetBar()
 end
 
 function PositionMainBar()
--- 4.2 deleted	MainMenuBar_UpdateKeyRing()
 	local button
 	for i = 1, NUM_ACTIONBAR_BUTTONS do
 		button = _G["ActionButton"..i]
@@ -161,14 +160,6 @@ Califpornia.Bars["Main"]:SetScript("OnEvent", function(self, event, ...)
 			for i, button in ipairs(buttons) do
 				button:SetAttribute("actionpage", tonumber(newstate))
 			end
-		]])
--- possibly fix for UI disappearing when entering vehicle
-		self:SetAttribute("_onstate-vehicleupdate", [[		
-			if newstate == "s2" then
---				self:GetParent():Hide()
-			else
---				self:GetParent():Show()
-			end	
 		]])
 		
 		RegisterStateDriver(self, "page", GetBar())
