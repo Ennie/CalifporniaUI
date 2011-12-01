@@ -442,3 +442,107 @@ if CalifporniaCFG.chat.filtersysmsg then
 	end
 	frame:SetScript("OnEvent", eventHandler);
 end
+------------------------------------------------------------------------
+--	Vladinator`s ChatHistory
+------------------------------------------------------------------------
+if CalifporniaCFG.chat.history then
+
+
+local f, db = CreateFrame("Frame")
+
+local keep = 500 -- number of messages to log (could do 10000 too, in theory...)
+
+local events = {
+  "CHAT_MSG_BATTLEGROUND",
+  "CHAT_MSG_BATTLEGROUND_LEADER",
+  "CHAT_MSG_BN_WHISPER", -- battle.net whispers will show wrong names
+  "CHAT_MSG_BN_WHISPER_INFORM", -- battle.net whispers will show wrong names
+  "CHAT_MSG_CHANNEL", -- all channel related talk (general, trade, defense, custom channels, e.g.)
+  "CHAT_MSG_EMOTE", -- only "/me text" messages, not /dance, /lol and such
+  "CHAT_MSG_GUILD",
+  "CHAT_MSG_GUILD_ACHIEVEMENT",
+  "CHAT_MSG_OFFICER",
+  "CHAT_MSG_PARTY",
+  "CHAT_MSG_PARTY_LEADER",
+  "CHAT_MSG_RAID",
+  "CHAT_MSG_RAID_LEADER",
+  "CHAT_MSG_RAID_WARNING",
+  "CHAT_MSG_SAY",
+  "CHAT_MSG_WHISPER",
+  "CHAT_MSG_WHISPER_INFORM",
+  "CHAT_MSG_YELL",
+  "PLAYER_LOGIN", -- not a part of the chat messages logging, must be kept to show log at login
+}
+
+local playerFlag = "CHATHISTORYOWNMSGFLAG" -- unique flag that means that this was our message (must not change in between sessions or you have to delete the savedvariables file)
+
+_G["CHAT_FLAG_"..playerFlag] = "|TInterface\\GossipFrame\\GossipGossipIcon.blp:0:0:1:-2:0:0:0:0:0:0:0:0:0|t "
+
+local _ChatEdit_SetLastTellTarget = ChatEdit_SetLastTellTarget
+function ChatEdit_SetLastTellTarget(...)
+  if f.silent then
+    return
+  end
+  return _ChatEdit_SetLastTellTarget(...)
+end
+
+local function timestamp()
+  return time().."."..select(2, ("."):split(GetTime() or "0."..math.random(1, 999), 2))
+end
+
+local function printsorted()
+  local temp, data = {}
+  for id, _ in pairs(db) do
+    table.insert(temp, tonumber(id))
+  end
+  table.sort(temp, function(a, b)
+    return a < b
+  end)
+  for i = 1, #temp do
+    data = db[tostring(temp[i])]
+    if type(data) == "table" then
+      ChatFrame_MessageEventHandler(DEFAULT_CHAT_FRAME, data[20], unpack(data))
+    end
+  end
+end
+
+local function cleanup()
+  local c, k = 0
+  for id, data in pairs(db) do
+    c = c + 1
+    if (not k) or k > data[21] then
+      k = data[21]
+    end
+  end
+  if c > keep then
+    db[k] = nil
+  end
+end
+
+f:SetScript("OnEvent", function(f, event, ...)
+  if event == "PLAYER_LOGIN" then
+    ChatHistoryDB = type(ChatHistoryDB) == "table" and ChatHistoryDB or {}
+    --table.wipe(ChatHistoryDB) -- uncomment to reset the database when you login (remember to comment again to start saving from now on!)
+    db = ChatHistoryDB
+    f.silent = 1
+    printsorted()
+    f.silent = nil
+  else
+    local temp = {...}
+    if #temp > 0 then
+      temp[20] = event
+      temp[21] = timestamp()
+      if temp[2] == UnitName("player") then
+        temp[6] = playerFlag
+      end
+      db[temp[21]] = temp
+      cleanup()
+    end
+  end
+end)
+
+for _, event in pairs(events) do
+  f:RegisterEvent(event)
+end
+
+end

@@ -118,7 +118,6 @@ local function GetBar()
 end
 
 function PositionMainBar()
--- 4.2 deleted	MainMenuBar_UpdateKeyRing()
 	local button
 	for i = 1, NUM_ACTIONBAR_BUTTONS do
 		button = _G["ActionButton"..i]
@@ -127,7 +126,6 @@ function PositionMainBar()
 		Califpornia.SkinButton(button, true, false)
 		SetButtonFontsBig(button)
 		button:ClearAllPoints()
-		
 		if i == 1 then
 			button:SetPoint("BOTTOMLEFT", CalifporniaActionBarMain, Califpornia.CFG.actionbars.btn_spacing, Califpornia.CFG.actionbars.btn_spacing)
 		else
@@ -162,14 +160,6 @@ Califpornia.Bars["Main"]:SetScript("OnEvent", function(self, event, ...)
 			for i, button in ipairs(buttons) do
 				button:SetAttribute("actionpage", tonumber(newstate))
 			end
-		]])
--- possibly fix for UI disappearing when entering vehicle
-		self:SetAttribute("_onstate-vehicleupdate", [[		
-			if newstate == "s2" then
---				self:GetParent():Hide()
-			else
---				self:GetParent():Show()
-			end	
 		]])
 		
 		RegisterStateDriver(self, "page", GetBar())
@@ -345,6 +335,43 @@ do
 	hooksecurefunc("ShapeshiftBar_Update", CalifporniaUI_MoveShapeshift);
 end
 ----------------------------------------------------------------------------------------
+-- 			EXTRA ACTION BAR (4.3)
+----------------------------------------------------------------------------------------
+local num = 1 -- (number of extra action buttons)
+Califpornia.Bars["Extra"] = CreateFrame("Frame", "CalifporniaActionBarExtra", UIParent)
+Califpornia.Bars["Extra"]:SetWidth(Califpornia.CFG.actionbars.small_button*num+Califpornia.CFG.actionbars.btn_spacing*(num-1))
+Califpornia.Bars["Extra"]:SetHeight(Califpornia.CFG.actionbars.small_button)
+Califpornia.Bars["Extra"]:SetPoint("BOTTOM", CalifporniaActionBarMain, "TOP", 0, Califpornia.CFG.actionbars.small_button + Califpornia.CFG.actionbars.btn_spacing)
+
+
+for i=1, num do
+	local button = _G["ExtraActionButton"..i]
+	if not button then return end
+	button:SetSize(Califpornia.CFG.actionbars.small_button, Califpornia.CFG.actionbars.small_button)
+	Califpornia.SkinButton(button, true, false)
+	--SetButtonFontsSmall(button)
+	button:ClearAllPoints()
+	if i == 1 then
+		button:SetPoint("BOTTOMLEFT", CalifporniaActionBarExtra, Califpornia.CFG.actionbars.btn_spacing,0)
+	else
+		local previous = _G["ExtraActionButton"..i-1]
+		button:SetPoint("LEFT", previous, "RIGHT", Califpornia.CFG.actionbars.btn_spacing, 0)
+	end
+end
+
+
+Califpornia.Bars["Extra"]:RegisterEvent("UPDATE_EXTRA_ACTIONBAR")
+Califpornia.Bars["Extra"]:SetScript("OnEvent", function(self, event, ...)
+	if (event == "UPDATE_EXTRA_ACTIONBAR") then
+		if (HasExtraActionBar()) then
+			self:Show()
+		elseif(self:IsShown()) then
+			self:Hide()
+		end
+	end
+end)
+
+----------------------------------------------------------------------------------------
 -- 			VEHICLE EXIT BUTTON
 ----------------------------------------------------------------------------------------
 Califpornia.Bars["VehicleExit"] = CreateFrame("Frame", "CalifporniaActionBarVehicleExit", UIParent)
@@ -367,12 +394,15 @@ do
 	vbtn:SetScript("OnEvent", function(self,event,...)
 		local arg1 = ...;
 		if(((event=="UNIT_ENTERING_VEHICLE") or (event=="UNIT_ENTERED_VEHICLE")) and arg1 == "player") then
-			vbtn:SetAlpha(1)
+			--vbtn:SetAlpha(1)
+			vbtn:Show()
 		elseif(((event=="UNIT_EXITING_VEHICLE") or (event=="UNIT_EXITED_VEHICLE")) and arg1 == "player") then
-			vbtn:SetAlpha(0)
+			--vbtn:SetAlpha(0)
+			vbtn:Hide()
 		end
 	end)  
-	vbtn:SetAlpha(0)
+	--vbtn:SetAlpha(0)
+	vbtn:Hide()
 end
 ----------------------------------------------------------------------------------------
 -- 			Style flyouts
@@ -406,6 +436,9 @@ local function FlyoutButtonPos(self, buttons, direction)
 	end
 end
 local function styleflyout(self)
+	if not self.FlyoutArrow then
+		return;
+	end
 	self.FlyoutBorder:SetAlpha(0)
 	self.FlyoutBorderShadow:SetAlpha(0)
 	
